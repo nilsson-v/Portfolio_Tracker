@@ -1,0 +1,5 @@
+package Data
+
+object Label {
+
+}

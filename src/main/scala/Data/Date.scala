@@ -5,7 +5,8 @@ import sys.process._
 import java.net.URL
 import java.io.File
 
-class Amount(file: File):
-
+class Date(file: File):
   
-end Amount
+  
+end Date
+

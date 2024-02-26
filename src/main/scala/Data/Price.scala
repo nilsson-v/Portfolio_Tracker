@@ -12,7 +12,7 @@ class Price(file: File):
 
   val json: ujson.Value = ujson.read(jsonString)
 
-  def openPrice = println(json("o"))
+  def openPrice() = println(json("o"))
 
 
 

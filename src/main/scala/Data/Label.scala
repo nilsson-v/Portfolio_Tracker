@@ -6,6 +6,6 @@ import java.net.URL
 import java.io.File
 
 class Label(file: File):
-  
-  
+
+
 end Label

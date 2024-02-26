@@ -27,6 +27,9 @@ object Main extends JFXApp3:
 
     root.children += rectangle
 
+    Data.DataReader().fetchAPI()
+    
+   
   end start
 
 end Main

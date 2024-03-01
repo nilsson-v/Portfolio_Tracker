@@ -1,9 +1,11 @@
 package Data
 
 import io.StdIn.*
-import sys.process._
+import sys.process.*
 import java.net.URL
 import java.io.File
+import scala.io.Source
+import scala.util.Using
 
 class DataReader:
 
@@ -21,10 +23,12 @@ class DataReader:
      Ticker+"/range/"+Range+"/"+timeSpan+"/"+startDate+"/"+endDate+
       "?adjusted=true&sort=asc&limit=120&apiKey=pQidfuXRC5_WyjW5pS5QmxyWY_eLggpZ"
 
-   val fileContent = scala.io.Source.fromURL(url).mkString
-   val filePath = folderPath/fileName
-   os.makeDir.all(folderPath)
-   os.write.over(filePath, fileContent)
+   Using(scala.io.Source.fromURL(url)) { source =>
+     val fileContent = source.mkString
+     val filePath = folderPath/fileName
+     os.makeDir.all(folderPath)
+     os.write.over(filePath, fileContent)
+   }
 
   def saveText() =
 

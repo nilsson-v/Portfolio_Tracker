@@ -23,19 +23,22 @@ class DataReader:
      Ticker+"/range/"+Range+"/"+timeSpan+"/"+startDate+"/"+endDate+
       "?adjusted=true&sort=asc&limit=120&apiKey=pQidfuXRC5_WyjW5pS5QmxyWY_eLggpZ"
 
+   os.makeDir.all(folderPath)
+
    Using(scala.io.Source.fromURL(url)) { source =>
      val fileContent = source.mkString
      val filePath = folderPath/fileName
-     os.makeDir.all(folderPath)
      os.write.over(filePath, fileContent)
    }
 
-  def saveText() =
+   println("File: " + fileName + " was imported succesfully " + url)
 
-    val text = "hello world!"
-    val filePath = folderPath/"HELLO"
-    os.makeDir.all(folderPath)
-    os.write.over(filePath, text)
+
+
+
+
+
+
 
 
 

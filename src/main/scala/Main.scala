@@ -1,7 +1,11 @@
 import scalafx.application.JFXApp3
+import scalafx.event.ActionEvent
 import scalafx.scene.Scene
-import scalafx.scene.control.{Button, MenuBar, Menu, MenuItem}
+import scalafx.scene.control.{Button, Menu, MenuBar, MenuItem}
 import scalafx.scene.layout.BorderPane
+import scalafx.stage.FileChooser
+import scalafx.stage.FileChooser.*
+import scalafx.Includes._
 import scalafx.scene.shape.Rectangle
 import scalafx.scene.paint.Color.*
 
@@ -26,7 +30,8 @@ object Main extends JFXApp3:
     val fileMenu = new Menu("File")
     val importFile = new MenuItem("Import")
     val exportFile = new MenuItem("Export")
-    fileMenu.items = List(importFile, exportFile)
+    val openFile = new MenuItem("Open")
+    fileMenu.items = List(importFile, exportFile, openFile)
 
     val createMenu = new Menu("Create")
     val createGraph = new MenuItem("Graph")
@@ -38,8 +43,12 @@ object Main extends JFXApp3:
 
     rootPane.top = menuBar
 
-
-    //Data.DataReader().fetchAPI()
+    //importFile.onAction = Data.DataReader().fetchAPI()
+    //exportFile.onAction = ???
+    openFile.onAction = (e: ActionEvent) => {
+      val fileChooser = new FileChooser
+      val selected = fileChooser.showOpenDialog(stage)
+    }
 
 
   end start

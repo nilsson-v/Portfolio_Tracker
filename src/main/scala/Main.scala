@@ -1,35 +1,47 @@
 import scalafx.application.JFXApp3
 import scalafx.scene.Scene
-import scalafx.scene.layout.Pane
+import scalafx.scene.control.{Button, MenuBar, Menu, MenuItem}
+import scalafx.scene.layout.BorderPane
 import scalafx.scene.shape.Rectangle
-import scalafx.scene.paint.Color._
+import scalafx.scene.paint.Color.*
 
 object Main extends JFXApp3:
 
   def start() =
 
     stage = new JFXApp3.PrimaryStage:
-      title = "UniqueProjectName"
-      width = 600
-      height = 450
+      title = "Financial tracker"
+      width = 800
+      height = 600
 
-    val root = Pane()
+    val rootPane = new BorderPane
 
-    val scene = Scene(parent = root)
+    val scene = Scene(parent = rootPane)
     stage.scene = scene
 
-    val rectangle = new Rectangle:
-      x = 275
-      y = 175
-      width = 50
-      height = 50
-      fill = Blue
+    //Menu bar
 
-    root.children += rectangle
+    val menuBar = new MenuBar
 
-    Data.DataReader().fetchAPI()
-    
-   
+    val fileMenu = new Menu("File")
+    val importFile = new MenuItem("Import")
+    val exportFile = new MenuItem("Export")
+    fileMenu.items = List(importFile, exportFile)
+
+    val createMenu = new Menu("Create")
+    val createGraph = new MenuItem("Graph")
+    val createTable = new MenuItem("Table")
+    createMenu.items = List(createGraph,createTable)
+
+    val viewMenu = new Menu("View")
+    menuBar.menus = List(fileMenu, createMenu, viewMenu)
+
+    rootPane.top = menuBar
+
+
+    //Data.DataReader().fetchAPI()
+
+
   end start
 
 end Main

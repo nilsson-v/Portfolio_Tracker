@@ -1,13 +1,11 @@
 import scalafx.application.JFXApp3
 import scalafx.event.ActionEvent
 import scalafx.scene.Scene
-import scalafx.scene.control.{Button, Menu, MenuBar, MenuItem}
+import scalafx.scene.control.{Menu, MenuBar, MenuItem, TableColumn, TableView}
 import scalafx.scene.layout.BorderPane
 import scalafx.stage.FileChooser
 import scalafx.stage.FileChooser.*
-import scalafx.Includes._
-import scalafx.scene.shape.Rectangle
-import scalafx.scene.paint.Color.*
+import scalafx.Includes.*
 
 object Main extends JFXApp3:
 
@@ -49,6 +47,41 @@ object Main extends JFXApp3:
       val fileChooser = new FileChooser
       val selected = fileChooser.showOpenDialog(stage)
     }
+
+    createTable.onAction = (e: ActionEvent) => {
+
+    val table = new TableView[Visuals.Table]
+    table.editable = true
+    table.prefWidth = 400
+    table.prefHeight = 400
+
+    val stockCol = new TableColumn[Visuals.Table, String] {
+    text = "Stock Symbol"
+    cellValueFactory = _.value.stock
+    prefWidth = 100
+    }
+    val priceCol = new TableColumn[Visuals.Table, String] {
+    text = "Price"
+    cellValueFactory = _.value.price
+    prefWidth = 50
+    }
+    val dateCol =  new TableColumn[Visuals.Table, String] {
+    text = "Date"
+    cellValueFactory = _.value.date
+    prefWidth = 75
+    }
+
+    table.columns ++= List(stockCol, priceCol, dateCol)
+
+    rootPane.center = table
+
+    }
+
+
+
+    //Data.DataReader().fetchAPI()
+
+
 
 
   end start

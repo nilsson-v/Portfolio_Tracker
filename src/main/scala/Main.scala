@@ -2,7 +2,7 @@ import Visuals.Table
 import scalafx.application.JFXApp3
 import scalafx.event.ActionEvent
 import scalafx.scene.Scene
-import scalafx.scene.control.{Menu, MenuBar, MenuItem, TableColumn, TableView}
+import scalafx.scene.control.{Menu, MenuBar, MenuItem, SelectionMode, TableColumn, TableView, Button}
 import scalafx.scene.layout.BorderPane
 import scalafx.stage.FileChooser
 import scalafx.stage.FileChooser.*
@@ -39,8 +39,11 @@ object Main extends JFXApp3:
     val createTable = new MenuItem("Table")
     createMenu.items = List(createGraph,createTable)
 
-    val viewMenu = new Menu("View")
-    menuBar.menus = List(fileMenu, createMenu, viewMenu)
+    val controlMenu = new Menu("Control Panel")
+    val hideTable = new MenuItem("Hide Table")
+    controlMenu.items = List(hideTable)
+
+    menuBar.menus = List(fileMenu, createMenu, controlMenu)
 
     rootPane.top = menuBar
 
@@ -51,7 +54,12 @@ object Main extends JFXApp3:
       val selected = fileChooser.showOpenDialog(stage)
     }
 
-    val data = ObservableBuffer(Table(Data.Label().labelName("NetflixTest.json"), Data.Price().closingPrice("NetflixTest.json").head.toString, "2024-01-02"))
+    /** The code that controls the tables are located under this text */
+
+    val data = ObservableBuffer(Table(Data.Label().labelName("NetflixTest.json"), Data.Price().closingPrice("NetflixTest.json").head.toString, "2024-01-02"),
+    Table(Data.Label().labelName("NetflixTest.json"), Data.Price().closingPrice("NetflixTest.json")(1).toString, "2024-01-03"),
+    Table(Data.Label().labelName("NetflixTest.json"), Data.Price().closingPrice("NetflixTest.json")(2).toString, "2024-01-04"),
+    Table(Data.Label().labelName("NetflixTest.json"), Data.Price().closingPrice("NetflixTest.json")(3).toString, "2024-01-05"))
 
     createTable.onAction = (e: ActionEvent) => {
 
@@ -76,11 +84,16 @@ object Main extends JFXApp3:
     prefWidth = 75
     }
 
+    hideTable.onAction = (e: ActionEvent) => table.visible = false
+
     table.columns ++= List(stockCol, priceCol, dateCol)
 
     table.refresh()
 
+    table.selectionModel().setSelectionMode(SelectionMode.Multiple)
+
     rootPane.center = table
+
 
     }
 

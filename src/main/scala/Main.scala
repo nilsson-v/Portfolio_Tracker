@@ -1,3 +1,4 @@
+import Visuals.Table
 import scalafx.application.JFXApp3
 import scalafx.event.ActionEvent
 import scalafx.scene.Scene
@@ -6,6 +7,8 @@ import scalafx.scene.layout.BorderPane
 import scalafx.stage.FileChooser
 import scalafx.stage.FileChooser.*
 import scalafx.Includes.*
+import scalafx.beans.property.{ReadOnlyStringWrapper, StringProperty}
+import scalafx.collections.ObservableBuffer
 
 object Main extends JFXApp3:
 
@@ -48,30 +51,34 @@ object Main extends JFXApp3:
       val selected = fileChooser.showOpenDialog(stage)
     }
 
+    val data = ObservableBuffer(Table(Data.Label().labelName("NetflixTest.json"), Data.Price().closingPrice("NetflixTest.json").head.toString, "2024-01-02"))
+
     createTable.onAction = (e: ActionEvent) => {
 
-    val table = new TableView[Visuals.Table]
+    val table = new TableView[Table](data)
     table.editable = true
     table.prefWidth = 400
     table.prefHeight = 400
 
-    val stockCol = new TableColumn[Visuals.Table, String] {
+    val stockCol = new TableColumn[Table, String] {
     text = "Stock Symbol"
     cellValueFactory = _.value.stock
     prefWidth = 100
     }
-    val priceCol = new TableColumn[Visuals.Table, String] {
+    val priceCol = new TableColumn[Table, String] {
     text = "Price"
     cellValueFactory = _.value.price
     prefWidth = 50
     }
-    val dateCol =  new TableColumn[Visuals.Table, String] {
+    val dateCol =  new TableColumn[Table, String] {
     text = "Date"
     cellValueFactory = _.value.date
     prefWidth = 75
     }
 
     table.columns ++= List(stockCol, priceCol, dateCol)
+
+    table.refresh()
 
     rootPane.center = table
 

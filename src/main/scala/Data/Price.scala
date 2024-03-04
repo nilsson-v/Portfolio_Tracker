@@ -1,32 +1,40 @@
 package Data
 
 import io.StdIn.*
-import sys.process._
+import sys.process.*
 import java.net.URL
 import java.io.File
-import upickle.default._
+import upickle.default.*
+
+import scala.collection.mutable.Buffer
 
 
 class Price:
 
-  def openingPrice(fileName: String) =
+  def count(fileName: String) =
     val jsonString = os.read(os.pwd/"APIFiles"/fileName)
     val priceData = ujson.read(jsonString)
-    val oPrice = priceData("results")(0)("o").num
-    println(oPrice)
+    val count = priceData("count").num
+    count.toInt
+
+  def openingPrice(fileName: String): List[Double] =
+    var pricesList = List[Double]()
+    val jsonString = os.read(os.pwd/"APIFiles"/fileName)
+    val priceData = ujson.read(jsonString)
+    for i <- 0 until count(fileName) do
+     val oPrice = priceData("results")(i)("o").num
+     pricesList = pricesList :+ oPrice
+    pricesList
 
   def closingPrice(fileName: String) =
+    var pricesList = List[Double]()
     val jsonString = os.read(os.pwd/"APIFiles"/fileName)
     val priceData = ujson.read(jsonString)
-    val cPrice = priceData("results")(0)("c").num
-    println(cPrice)
+    for i <- 0 until count(fileName) do
+     val oPrice = priceData("results")(i)("c").num
+     pricesList = pricesList :+ oPrice
+    pricesList
 
-
-  /** vw = volume
-   *  o = open
-   *  c = close
-   *  h = high
-   *  l = low*/
 
 end Price
 

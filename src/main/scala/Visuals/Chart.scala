@@ -1,0 +1,5 @@
+package Visuals
+
+class Chart {
+
+}

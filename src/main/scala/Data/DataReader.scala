@@ -26,7 +26,7 @@ class DataReader:
 
    val url = "https://www.alphavantage.co/query?function=TIME_SERIES_MONTHLY_ADJUSTED&symbol=" + Ticker + "&apikey=SZPPN9IYEA485BC9&datatype=json"
 
-   //os.makeDir.all(folderPath)
+   os.makeDir.all(folderPath)
 
    Using(scala.io.Source.fromURL(url)) { source =>
      val fileContent = source.mkString

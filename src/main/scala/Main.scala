@@ -186,7 +186,7 @@ object Main extends JFXApp3:
 
     rootPane.center = tableView */
 
-    Data.DataReader().fetchAPI()
+    //Data.DataReader().fetchAPI()
 
 
 

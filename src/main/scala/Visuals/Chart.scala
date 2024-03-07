@@ -8,7 +8,7 @@ class Chart:
   val priceData = Data.Price().closingPrice("NetflixTest.json")
 
   /**val chartData = XYChart.Series[Number, Number]("Month",
-    ObservableBuffer(priceData.map( pd => XYChart.Data[Number, Number])
+    ObservableBuffer(priceData.map( pd => XYChart.Data[Number, Number])))
   val xAxis = NumberAxis()
   val yAxis = NumberAxis()
 

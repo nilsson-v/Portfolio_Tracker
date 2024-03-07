@@ -12,4 +12,9 @@ libraryDependencies += "com.lihaoyi" %% "upickle" % "3.2.0"
 
 libraryDependencies += "com.lihaoyi" %% "os-lib" % "0.9.1"
 
+libraryDependencies += "org.json4s" %% "json4s-native" % "4.0.7"
+
+libraryDependencies += "org.json4s" %% "json4s-jackson" % "4.0.7"
+
+
 

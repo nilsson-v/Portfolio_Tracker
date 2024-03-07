@@ -11,7 +11,6 @@ import scalafx.beans.property.{ReadOnlyStringWrapper, StringProperty}
 import scalafx.collections.ObservableBuffer
 import scalafx.geometry.Orientation
 import scalafx.scene.control.cell.TextFieldTableCell
-
 import scala.io.StdIn.readLine
 
 object Main extends JFXApp3:
@@ -19,7 +18,7 @@ object Main extends JFXApp3:
   def start() =
 
     stage = new JFXApp3.PrimaryStage:
-      title = "Financial tracker"
+      title = "Networth tracker"
       width = 800
       height = 600
 
@@ -64,13 +63,7 @@ object Main extends JFXApp3:
 
     val testdata = ObservableBuffer(Table("Amount", "1245", "2023"))
 
-    val tab = new TabPane
-    createTab.onAction = (e: ActionEvent) => tab += makeTab()
-    rootPane.center = tab
-
-
-    def makeTab(): Tab = {
-      val tableView = new TableView[Table](testdata)
+    val tableView = new TableView[Table](testdata)
       tableView.prefWidth = 240
       tableView.prefHeight = 300
       val stockCol = new TableColumn[Table, String] {
@@ -89,6 +82,14 @@ object Main extends JFXApp3:
       prefWidth = 75
       }
       tableView.columns ++= List(stockCol, priceCol, dateCol)
+
+    val tab = new TabPane
+    createTab.onAction = (e: ActionEvent) => tab += makeTab()
+    rootPane.center = tab
+
+
+    def makeTab(): Tab = {
+      val tabTable = tableView
       val scroller = new ScrollPane
       scroller.content = tableView
 
@@ -99,8 +100,9 @@ object Main extends JFXApp3:
 
       val topBorder = new BorderPane
       //content = cards
-      val bottomBorder = new BorderPane
-      //content = graphs
+      val bottomBorder = new ScrollPane
+      //bottomBorder.content = ???
+
       val slider = new Slider(0, 800, 0)
       topBorder.top = slider
       val right = new SplitPane
@@ -184,7 +186,7 @@ object Main extends JFXApp3:
 
     rootPane.center = tableView */
 
-    //Data.DataReader().fetchAPI()
+    Data.DataReader().fetchAPI()
 
 
 

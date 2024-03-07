@@ -1,5 +1,7 @@
 package Data
 
+import scalafx.collections.ObservableBuffer
+
 import io.StdIn.*
 import sys.process.*
 import java.net.URL
@@ -17,8 +19,8 @@ class Price:
     val count = priceData("count").num
     count.toInt
 
-  def openingPrice(fileName: String): List[Double] =
-    var pricesList = List[Double]()
+  def openingPrice(fileName: String) =
+    var pricesList = ObservableBuffer[Double]()
     val jsonString = os.read(os.pwd/"APIFiles"/fileName)
     val priceData = ujson.read(jsonString)
     for i <- 0 until count(fileName) do
@@ -27,7 +29,7 @@ class Price:
     pricesList
 
   def closingPrice(fileName: String) =
-    var pricesList = List[Double]()
+    var pricesList = ObservableBuffer[Double]()
     val jsonString = os.read(os.pwd/"APIFiles"/fileName)
     val priceData = ujson.read(jsonString)
     for i <- 0 until count(fileName) do

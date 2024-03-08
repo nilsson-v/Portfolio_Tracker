@@ -15,7 +15,6 @@ import scala.concurrent.Await
 import scala.io.Source
 
 
-
 class StockData:
 
   implicit val formats: DefaultFormats = DefaultFormats
@@ -61,7 +60,7 @@ class StockData:
     val zipped = dateList.zip(priceList)
     val listStringDouble = s2toDouble(zipped)
     listStringDouble.toArray
-    //listToObservableBuffer(listStringDouble)
+
 
 
 

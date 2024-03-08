@@ -7,8 +7,6 @@ import java.io.File
 import scala.math.*
 
 
-
-
 class Amount:
 
   def holdings(holdingList: List[Double], volume: Double) =

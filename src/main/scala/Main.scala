@@ -58,6 +58,10 @@ object Main extends JFXApp3:
       val fileChooser = new FileChooser
       val selected = fileChooser.showOpenDialog(stage)
     }
+    createGraph.onAction = (e: ActionEvent) => {
+      val scatter = Visuals.Chart().makeScatter
+      rootPane.center = scatter
+    }
 
     /** Tab Pane */
 

@@ -1,20 +1,25 @@
 package Visuals
 
 import scalafx.collections.ObservableBuffer
-import scalafx.scene.chart.{LineChart, NumberAxis, XYChart}
+import scalafx.scene.chart.{CategoryAxis, LineChart, NumberAxis, ScatterChart, XYChart}
+
 
 class Chart:
 
-  val priceData = Data.Price().closingPrice("NetflixTest.json")
+  val priceData = Data.StockData().zipDatesAndPrices("Apple.json")
 
-  /**val chartData = XYChart.Series[Number, Number]("Month",
-    ObservableBuffer(priceData.map( pd => XYChart.Data[Number, Number])))
-  val xAxis = NumberAxis()
+  val chartData = new XYChart.Series[String, Number]
+  chartData.setName("Monthly Prices")
+  chartData.data = priceData.map(pd => XYChart.Data[String, Number](pd._1, pd._2))
+
+
+  val xAxis = CategoryAxis()
   val yAxis = NumberAxis()
 
+  val makeScatter = new LineChart[String, Number](xAxis, yAxis, ObservableBuffer(chartData))
 
 
-  val chartMake = new LineChart(xAxis, yAxis, ObservableBuffer(chartData)) */
+
 
 
 

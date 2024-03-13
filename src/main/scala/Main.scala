@@ -70,7 +70,7 @@ object Main extends JFXApp3:
     val testdata = ObservableBuffer(Table("Amount", "1245", "2023"))
     //val linePlotChart = Visuals.Chart().makeLinePlot
     val linePlot = Visuals.LinePlot().makeLinePlot("Apple.json")
-    val columnPlot = Visuals.ColumnChart().makeColumnChart
+    val combinedStocksPlot = Visuals.ColumnChart().makeMultiColumnChart(Array("Apple.json", "Netflix.json"))
 
     val tableView = new TableView[Table](testdata)
       tableView.prefWidth = 240
@@ -110,7 +110,7 @@ object Main extends JFXApp3:
       val topBorder = new BorderPane
       //content = cards
       val bottomBorder = new ScrollPane
-      bottomBorder.content = linePlot
+      bottomBorder.content = combinedStocksPlot
 
       val slider = new Slider(0, 800, 0)
       topBorder.top = slider
@@ -162,6 +162,7 @@ object Main extends JFXApp3:
     makeTab
     }
 
+
      createColumnPlot.onAction = (e: ActionEvent) => {
        val text = new TextInputDialog(defaultValue = "Default Value")
        text.title = "Stock"
@@ -201,7 +202,7 @@ object Main extends JFXApp3:
        }
      }
 
-     def makeColumnPlot(fileName: String): Tab = {
+    def makeColumnPlot(fileName: String): Tab = {
       val columnPlot = Visuals.ColumnChart().makeColumnChart(fileName)
       val makeTab = new Tab
       makeTab.text = "Column Chart"

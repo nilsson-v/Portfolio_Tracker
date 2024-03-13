@@ -1,5 +1,5 @@
 package Data
-import javafx.collections.FXCollections
+
 import upickle.default.*
 import org.json4s
 import org.json4s.JsonAST.JField
@@ -20,23 +20,23 @@ class StockData:
   implicit val formats: DefaultFormats = DefaultFormats
   implicit val system: ActorSystem = ActorSystem("ListToObservableBufferExample")
 
-  def s2toDouble(list: List[(String, String)]) =
+  private def s2toDouble(list: List[(String, String)]) =
     list.map {case(s, s2) => (s, s2.toDouble)}
 
-  def listToObservableBuffer(list: List[(String, Double)]) =
+  private def listToObservableBuffer(list: List[(String, Double)]) =
     val observableBuffer = AkkaSource(list).fold(ListBuffer.empty[(String, Double)]) { (buffer, element)
     => buffer += element }.runWith(Sink.head)
     val listBufferResult = Await.result(observableBuffer, 5.seconds)
     val observableBufferResult= ObservableBuffer(listBufferResult.toList)
     observableBufferResult
 
-  def singleClosePrice(fileName: String, date: String) =
+  private def singleClosePrice(fileName: String, date: String) =
     val jsonString = os.read(os.pwd / "APIFiles" / fileName)
     val parsedJson = parseJson(jsonString)
     val openValue = (parsedJson \ "Monthly Adjusted Time Series" \ date \ "5. adjusted close").extract[String]
     openValue
 
-  def closePrice(fileName: String) =
+  private def closePrice(fileName: String) =
     val jsonString = os.read(os.pwd / "APIFiles" / fileName)
     val parsedJson = parseJson(jsonString)
     val openingValues = (parsedJson \\ "Monthly Adjusted Time Series").children.
@@ -47,7 +47,7 @@ class StockData:
     }
     openingValues
 
-  def extractDates(fileName: String) =
+  private def extractDates(fileName: String) =
     val jsonString = os.read(os.pwd / "APIFiles" / fileName)
     val parsedJson = parseJson(jsonString)
     val dates = (parsedJson \ "Monthly Adjusted Time Series").asInstanceOf[JObject].values.keys.toList
@@ -61,7 +61,14 @@ class StockData:
     val listStringDouble = s2toDouble(zipped)
     listStringDouble.toArray
 
-
+  def combineStockPrices(stockList: Array[String]): Array[(String, Double)] =
+    val getStocks: Array[Array[(String, Double)]] = stockList.map(stock => zipDatesAndPrices(stock))
+    val groupedStocks = getStocks.flatten.groupBy(_._1)
+    println(groupedStocks)
+    val combinedStocks = groupedStocks.map { case(key, values) => (key, values.map(_._2).sum) }
+    val stocksToArray = combinedStocks.toArray
+    val sorted = stocksToArray.sorted
+    sorted
 
 
 

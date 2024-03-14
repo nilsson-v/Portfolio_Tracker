@@ -8,12 +8,8 @@ import scalafx.stage.FileChooser
 import scalafx.stage.FileChooser.*
 import scalafx.Includes.*
 import scalafx.beans.property.{ReadOnlyStringWrapper, StringProperty}
-import scalafx.collections.ObservableBuffer
-import scalafx.geometry.Orientation
-import scalafx.scene.control.cell.TextFieldTableCell
+import scalafx.geometry.{Orientation, Pos}
 
-import java.io.File
-import scala.io.StdIn.readLine
 
 object Main extends JFXApp3:
 
@@ -66,42 +62,13 @@ object Main extends JFXApp3:
 
 
     /** Tab Pane */
-    def showSymbol(fileName: String) =
-      Data.StockData().getSymbol(fileName)
-    def showPrice(fileName: String) =
-      Data.StockData().latestPrice(fileName)
-
-    val testdata = ObservableBuffer(Table(showSymbol("Apple.json"), showPrice("Apple.json"), 10.0.toString, (showPrice("Apple.json").toDouble*10.0).toString),
-      Table(showSymbol("Netflix.json"), showPrice("Netflix.json"), 5.0.toString, (showPrice("Netflix.json").toDouble*5.0).toString))
     //val linePlotChart = Visuals.Chart().makeLinePlot
     val linePlot = Visuals.LinePlot().makeLinePlot("Apple.json")
     val combinedStocksPlot = Visuals.ColumnChart().makeMultiColumnChart(Array("Apple.json", "Netflix.json"))
     val pieChart = Visuals.Pie().makePie(Array(("Apple.json", 10.0), ("Netflix.json", 5.0)))
+    val sumCard = Visuals.Card().makeSumCard(Array(("Apple.json", 10.0), ("Netflix.json", 5.0)))
 
-    val tableView = new TableView[Table](testdata)
-      tableView.prefWidth = 300
-      tableView.prefHeight = 300
-      val stockCol = new TableColumn[Table, String] {
-      text = "Stock Symbol"
-      cellValueFactory = _.value.stock
-      prefWidth = 100
-      }
-      val priceCol = new TableColumn[Table, String] {
-      text = "Price"
-      cellValueFactory = _.value.price
-      prefWidth = 75
-      }
-      val dateCol =  new TableColumn[Table, String] {
-      text = "Volume"
-      cellValueFactory = _.value.date
-      prefWidth = 50
-      }
-      val holdingCol = new TableColumn[Table, String] {
-      text = "Holdings"
-      cellValueFactory = _.value.holding
-      prefWidth = 75
-      }
-      tableView.columns ++= List(stockCol, priceCol, dateCol, holdingCol)
+    val tableView = Visuals.CreateTable().tableView
 
     val tab = new TabPane
     createTab.onAction = (e: ActionEvent) => tab += makeTab()
@@ -110,25 +77,30 @@ object Main extends JFXApp3:
 
     def makeTab(): Tab = {
       val tabTable = tableView
-      val scroller = new ScrollPane
-      scroller.content = tableView
+      val leftDown = new ScrollPane
+      leftDown.content = tableView
 
-      val propertyPane = new ScrollPane
-      propertyPane.content = pieChart
+      val leftUp = new ScrollPane
+      leftUp.content = pieChart
       val left = new SplitPane
-      left.orientation = Orientation.Vertical
-      left.items ++= List(propertyPane, scroller)
 
-      val topBorder = new BorderPane
-      //content = cards
-      val bottomBorder = new ScrollPane
-      bottomBorder.content = combinedStocksPlot
+      left.orientation = Orientation.Vertical
+      left.items ++= List(leftUp, leftDown)
+
+      val rightUp = new StackPane
+      rightUp.children = sumCard
+      rightUp.alignment = Pos.CenterLeft
+
+      val rightDown = new ScrollPane
+      rightDown.content = combinedStocksPlot
+      combinedStocksPlot.prefHeight = 450
+      combinedStocksPlot.prefWidth = 800
 
       val slider = new Slider(0, 800, 0)
-      topBorder.top = slider
+
       val right = new SplitPane
       right.orientation = Orientation.Vertical
-      right.items ++= List(topBorder, bottomBorder)
+      right.items ++= List(rightUp,rightDown)
       right.dividerPositions = 0.3
 
       val top = new SplitPane
@@ -140,83 +112,54 @@ object Main extends JFXApp3:
       makeTab.content = top
       makeTab
     }
-    /** Tables */
-
-    /**val data = ObservableBuffer(Table(Data.Label().labelName("NetflixTest.json"), Data.Price().closingPrice("NetflixTest.json").head.toString, "2024-01-02"),
-    Table(Data.Label().labelName("NetflixTest.json"), Data.Price().closingPrice("NetflixTest.json")(1).toString, "2024-01-03"),
-    Table(Data.Label().labelName("NetflixTest.json"), Data.Price().closingPrice("NetflixTest.json")(2).toString, "2024-01-04"),
-    Table(Data.Label().labelName("NetflixTest.json"), Data.Price().closingPrice("NetflixTest.json")(3).toString, "2024-01-05")) */
 
     createTable.onAction = (e: ActionEvent) => tab += makeTableTab()
 
     def makeTableTab(): Tab = {
-    val tableView = new TableView[Table](testdata)
-    val stockCol = new TableColumn[Table, String] {
-    text = "Stock Symbol"
-    cellValueFactory = _.value.stock
-    prefWidth = 100
-    }
-    val priceCol = new TableColumn[Table, String] {
-    text = "Price"
-    cellValueFactory = _.value.price
-    prefWidth = 75
-    }
-    val amountCol =  new TableColumn[Table, String] {
-    text = "Amount"
-    cellValueFactory = _.value.date
-    prefWidth = 50
-    }
-    val holdingCol = new TableColumn[Table, String] {
-    text = "Holding"
-    cellValueFactory = _.value.holding
-    prefWidth = 75
-    }
-    tableView.columns ++= List(stockCol, priceCol, dateCol, holdingCol)
+      val makeTab = new Tab
+      makeTab.text = "Table"
+      makeTab.content = tableView
+      makeTab
+      }
 
-    val makeTab = new Tab
-    makeTab.text = "Table"
-    makeTab.content = tableView
-    makeTab
+    createColumnPlot.onAction = (e: ActionEvent) => {
+      val text = new TextInputDialog(defaultValue = "Default Value")
+      text.title = "Stock"
+      text.headerText = "Input file: "
+      text.contentText = "File: "
+
+      val result = text.showAndWait()
+      result match {
+        case Some(fileName) => tab += makeColumnPlot(fileName)
+        case _ => None
+      }
     }
 
-     createColumnPlot.onAction = (e: ActionEvent) => {
-       val text = new TextInputDialog(defaultValue = "Default Value")
-       text.title = "Stock"
-       text.headerText = "Input file: "
-       text.contentText = "File: "
+    createLinePlot.onAction = (e: ActionEvent) => {
+      val text = new TextInputDialog(defaultValue = "Default Value")
+      text.title = "Stock"
+      text.headerText = "Input file: "
+      text.contentText = "File: "
 
-       val result = text.showAndWait()
-       result match {
-         case Some(fileName) => tab += makeColumnPlot(fileName)
-         case _ => None
+      val result = text.showAndWait()
+      result match {
+        case Some(fileName) => tab += makeLinePlot(fileName)
+        case _ => None
        }
      }
 
-     createLinePlot.onAction = (e: ActionEvent) => {
-       val text = new TextInputDialog(defaultValue = "Default Value")
-       text.title = "Stock"
-       text.headerText = "Input file: "
-       text.contentText = "File: "
+    createScatterPlot.onAction = (e: ActionEvent) => {
+      val text = new TextInputDialog(defaultValue = "Default Value")
+      text.title = "Stock"
+      text.headerText = "Input file: "
+      text.contentText = "File: "
 
-       val result = text.showAndWait()
-       result match {
-         case Some(fileName) => tab += makeLinePlot(fileName)
-         case _ => None
-       }
-     }
-
-     createScatterPlot.onAction = (e: ActionEvent) => {
-       val text = new TextInputDialog(defaultValue = "Default Value")
-       text.title = "Stock"
-       text.headerText = "Input file: "
-       text.contentText = "File: "
-
-       val result = text.showAndWait()
-       result match {
-         case Some(fileName) => tab += makeScatterPlot(fileName)
-         case _ => None
-       }
-     }
+      val result = text.showAndWait()
+      result match {
+        case Some(fileName) => tab += makeScatterPlot(fileName)
+        case _ => None
+      }
+    }
 
     def makeColumnPlot(fileName: String): Tab = {
       val columnPlot = Visuals.ColumnChart().makeColumnChart(fileName)

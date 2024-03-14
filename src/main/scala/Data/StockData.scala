@@ -21,9 +21,9 @@ class StockData:
   implicit val system: ActorSystem = ActorSystem("ListToObservableBufferExample")
 
   private def s2toDouble(list: List[(String, String)]) =
-    list.map {case(s, s2) => (s, s2.toDouble)}
+    list.map((s, s2) => (s, s2.toDouble))
 
-  private def listToObservableBuffer(list: List[(String, Double)]) =
+  def listToObservableBuffer(list: Array[(String, Double)]) =
     val observableBuffer = AkkaSource(list).fold(ListBuffer.empty[(String, Double)]) { (buffer, element)
     => buffer += element }.runWith(Sink.head)
     val listBufferResult = Await.result(observableBuffer, 5.seconds)
@@ -39,13 +39,13 @@ class StockData:
   private def closePrice(fileName: String) =
     val jsonString = os.read(os.pwd / "APIFiles" / fileName)
     val parsedJson = parseJson(jsonString)
-    val openingValues = (parsedJson \\ "Monthly Adjusted Time Series").children.
+    val closingValues = (parsedJson \\ "Monthly Adjusted Time Series").children.
       flatMap {
       case JObject(fields) => fields.collect {
       case ("5. adjusted close", JString(value)) => value
     }
     }
-    openingValues
+    closingValues
 
   private def extractDates(fileName: String) =
     val jsonString = os.read(os.pwd / "APIFiles" / fileName)
@@ -61,14 +61,27 @@ class StockData:
     val listStringDouble = s2toDouble(zipped)
     listStringDouble.toArray
 
+  def latestPrice(fileName: String) =
+    val closingPrices = closePrice(fileName)
+    closingPrices.head
+
   def combineStockPrices(stockList: Array[String]): Array[(String, Double)] =
     val getStocks: Array[Array[(String, Double)]] = stockList.map(stock => zipDatesAndPrices(stock))
     val groupedStocks = getStocks.flatten.groupBy(_._1)
-    println(groupedStocks)
-    val combinedStocks = groupedStocks.map { case(key, values) => (key, values.map(_._2).sum) }
+    val combinedStocks = groupedStocks.map((key, values) => (key, values.map(_._2).sum))
     val stocksToArray = combinedStocks.toArray
     val sorted = stocksToArray.sorted
     sorted
+
+  def multiplyStocks(fileName: String, multiplier: Double) =
+    val stockArray = zipDatesAndPrices(fileName)
+    stockArray.map((key, values) => (key, values * multiplier))
+
+  def getSymbol(fileName: String) =
+    val jsonString = os.read(os.pwd / "APIFiles" / fileName)
+    val parsedJson = parseJson(jsonString)
+    val symbol = (parsedJson \ "Meta Data" \ "2. Symbol").extract[String]
+    symbol
 
 
 

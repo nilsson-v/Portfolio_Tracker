@@ -29,7 +29,7 @@ class Card:
     val sumCard = new Rectangle
     sumCard.width = 200
     sumCard.height = 150
-    sumCard.fill = Color.LightGray
+    sumCard.fill = Color.Orange
 
     val content = new Text
     content.text = priceSum.toString

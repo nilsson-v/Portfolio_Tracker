@@ -18,22 +18,22 @@ class CreateTable:
       val stockCol = new TableColumn[Table, String] {
       text = "Stock Symbol"
       cellValueFactory = _.value.stock
-      prefWidth = 100
+      prefWidth = 10
       }
       val priceCol = new TableColumn[Table, String] {
       text = "Price"
       cellValueFactory = _.value.price
-      prefWidth = 75
+      prefWidth = 100
       }
       val dateCol =  new TableColumn[Table, String] {
       text = "Volume"
       cellValueFactory = _.value.date
-      prefWidth = 50
+      prefWidth = 100
       }
       val holdingCol = new TableColumn[Table, String] {
       text = "Holdings"
       cellValueFactory = _.value.holding
-      prefWidth = 75
+      prefWidth = 100
       }
       tableView.columns ++= List(stockCol, priceCol, dateCol, holdingCol)
 

@@ -1,7 +1,7 @@
 import Visuals.Table
 import scalafx.application.JFXApp3
 import scalafx.event.ActionEvent
-import scalafx.scene.Scene
+import scalafx.scene.{Node, Scene}
 import scalafx.scene.control.{Button, Menu, MenuBar, MenuItem, ScrollPane, SelectionMode, Slider, SplitPane, Tab, TabPane, TableColumn, TableView, TextField, TextInputDialog, TreeView}
 import scalafx.scene.layout.{BorderPane, StackPane}
 import scalafx.stage.FileChooser
@@ -9,6 +9,9 @@ import scalafx.stage.FileChooser.*
 import scalafx.Includes.*
 import scalafx.beans.property.{ReadOnlyStringWrapper, StringProperty}
 import scalafx.geometry.{Orientation, Pos}
+import scalafx.scene.chart.{BarChart, PieChart}
+
+import scala.collection.mutable.ArrayBuffer
 
 
 object Main extends JFXApp3:
@@ -45,8 +48,8 @@ object Main extends JFXApp3:
 
     val controlMenu = new Menu("Control Panel")
     val hideTable = new MenuItem("Hide Table")
-
-    controlMenu.items = List(hideTable)
+    val addButton = new MenuItem("Add stocks")
+    controlMenu.items = List(hideTable, addButton)
 
     menuBar.menus = List(fileMenu, createMenu, controlMenu)
 
@@ -60,25 +63,57 @@ object Main extends JFXApp3:
       val selected = fileChooser.showOpenDialog(stage)
     }
 
-
     /** Tab Pane */
     //val linePlotChart = Visuals.Chart().makeLinePlot
-    val linePlot = Visuals.LinePlot().makeLinePlot("Apple.json")
-    val combinedStocksPlot = Visuals.ColumnChart().makeMultiColumnChart(Array("Apple.json", "Netflix.json"))
-    val pieChart = Visuals.Pie().makePie(Array(("Apple.json", 10.0), ("Netflix.json", 5.0)))
-    val sumCard = Visuals.Card().makeSumCard(Array(("Apple.json", 10.0), ("Netflix.json", 5.0)))
-
-    val tableView = Visuals.CreateTable().tableView
 
     val tab = new TabPane
-    createTab.onAction = (e: ActionEvent) => tab += makeTab()
-    rootPane.center = tab
 
+    val stockEntries: ArrayBuffer[(String, Double)] = ArrayBuffer()
+    //createTab.onAction = (e: ActionEvent) => addButton.visible = true
 
-    def makeTab(): Tab = {
+    addButton.onAction = (e: ActionEvent) => {
+      val textInput = new TextInputDialog(defaultValue = "Default Value")
+      textInput.title = "Stock"
+      textInput.headerText = "Enter stock and amount"
+      textInput.contentText = "Stock: "
+
+      val result = textInput.showAndWait()
+
+      result match {
+        case Some(stockAndHoldings) => val Array(stock, holdingsString) = stockAndHoldings.split("\\s+")
+          val holdings = try {
+            holdingsString.toDouble
+          } catch {
+            case _: NumberFormatException => 0.0
+          }
+
+          val existingStockIndex = stockEntries.indexWhere(_._1 == stock)
+          if (existingStockIndex != -1) then
+           stockEntries(existingStockIndex) = (stock -> (stockEntries(existingStockIndex)._2 + holdings))
+          else
+           stockEntries += (stock -> holdings)
+
+        val stocksVisualize = stockEntries.toArray
+
+        val linePlot = Visuals.LinePlot().makeLinePlot("Apple.json")
+        val stocksPlot = Visuals.ColumnChart().makeMultiColumnChart(stocksVisualize)
+        val pieChart = Visuals.Pie().makePie(stocksVisualize)
+        val sumCard = Visuals.Card().makeSumCard(stocksVisualize)
+        val tableView = Visuals.CreateTable().tableView
+
+        tab += makeTab(stock, tableView, pieChart, sumCard, stocksPlot)
+        rootPane.center = tab
+
+        case None => println("Dialog cancelled")
+    }
+    }
+
+    def makeTab(stock: String, tableView: TableView[Table], pieChart: PieChart, sumCard: Node, stocksPlot: BarChart[String, Number]): Tab = {
       val tabTable = tableView
       val leftDown = new ScrollPane
       leftDown.content = tableView
+      tableView.prefWidth = 600
+      tabTable.prefHeight = 500
 
       val leftUp = new ScrollPane
       leftUp.content = pieChart
@@ -92,9 +127,9 @@ object Main extends JFXApp3:
       rightUp.alignment = Pos.CenterLeft
 
       val rightDown = new ScrollPane
-      rightDown.content = combinedStocksPlot
-      combinedStocksPlot.prefHeight = 450
-      combinedStocksPlot.prefWidth = 800
+      rightDown.content = stocksPlot
+      stocksPlot.prefHeight = 450
+      stocksPlot.prefWidth = 700
 
       val slider = new Slider(0, 800, 0)
 
@@ -111,14 +146,16 @@ object Main extends JFXApp3:
       makeTab.text = "Untitled"
       makeTab.content = top
       makeTab
+
     }
 
     createTable.onAction = (e: ActionEvent) => tab += makeTableTab()
 
     def makeTableTab(): Tab = {
+      val tableView2 = Visuals.CreateTable().tableView
       val makeTab = new Tab
       makeTab.text = "Table"
-      makeTab.content = tableView
+      makeTab.content = tableView2
       makeTab
       }
 

@@ -61,6 +61,11 @@ class StockData:
     val listStringDouble = s2toDouble(zipped)
     listStringDouble.toArray
 
+  def pricesFromMonth(fileName: String, Month: String) =
+    val wholeList = zipDatesAndPrices(fileName)
+    val filteredList = wholeList.dropWhile{ case (month, _) => month.take(7) < Month}
+    filteredList.map((x,y)=>(x, y.toString))
+
   def latestPrice(fileName: String) =
     val closingPrices = closePrice(fileName)
     closingPrices.head
@@ -82,8 +87,20 @@ class StockData:
     val parsedJson = parseJson(jsonString)
     val symbol = (parsedJson \ "Meta Data" \ "2. Symbol").extract[String]
     symbol
+    
+  def multiplyAndCombine(stockList: Array[(String, Double)]) =
+    val makeArray = stockList.map((stock, multiplier) => multiplyStocks(stock, multiplier))
+    val groupedStocks = makeArray.flatten.groupBy(_._1)
+    val combinedStocks = groupedStocks.map((key, values) => (key, values.map(_._2).sum))
+    val stocksToArray = combinedStocks.toArray
+    val sorted = stocksToArray.sorted
+    sorted
+
+ 
 
 
+    
+  
 
 end StockData
 

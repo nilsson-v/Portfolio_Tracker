@@ -48,10 +48,17 @@ object Main extends JFXApp3:
 
     val controlMenu = new Menu("Control Panel")
     val hideTable = new MenuItem("Hide Table")
-    val addButton = new MenuItem("Add stocks")
-    controlMenu.items = List(hideTable, addButton)
+    val addButton = new MenuItem("Add stock")
+    val removeButton = new MenuItem("Remove stock")
+    controlMenu.items = List(addButton, removeButton)
 
-    menuBar.menus = List(fileMenu, createMenu, controlMenu)
+    val chartMenu = new Menu("Chart type")
+    val lineType = new MenuItem("Line Plot")
+    val columnType = new MenuItem("Column Plot")
+    val scatterType = new MenuItem("Scatter Plot")
+    chartMenu.items = List(columnType, lineType, scatterType)
+
+    menuBar.menus = List(fileMenu, createMenu, controlMenu, chartMenu)
 
     rootPane.top = menuBar
 
@@ -72,33 +79,58 @@ object Main extends JFXApp3:
     val stockEntries: ArrayBuffer[(String, Double)] = ArrayBuffer()
     //createTab.onAction = (e: ActionEvent) => addButton.visible = true
 
-    /** Asks for the stocks and their multipliers */
+
+   /** def removeStockAmount(stock: String, amountToRemove: Double) =
+      val existingStockIndex = stockEntries.indexWhere(_._1 == stock)
+      if (existingStockIndex != -1) then
+        val updatedAmount = stockEntries(existingStockIndex)._2 - amountToRemove
+        if (updatedAmount >= 0) then
+          stockEntries(existingStockIndex) = (stock -> updatedAmount)
+          updateTab(stock, updatedAmount)
+
+    removeButton.onAction = */
+
+
+    /** Asks for the stocks, their multipliers and purchase date */
     addButton.onAction = (e: ActionEvent) => {
-      val textInput = new TextInputDialog(defaultValue = "Default Value")
-      textInput.title = "Stock"
-      textInput.headerText = "Enter stock, amount and purchase date"
-      textInput.contentText = "Stock: "
+      val stockDialog = new TextInputDialog(defaultValue = "Default Value")
+      stockDialog.title = "Stock"
+      stockDialog.headerText = "Enter stock"
+      stockDialog.contentText = "Stock: "
+      val stockResult = stockDialog.showAndWait()
 
-      val result = textInput.showAndWait()
+      val amountDialog = new TextInputDialog(defaultValue = "Default Value")
+      amountDialog.title = "Amount"
+      amountDialog.headerText = "Enter amount"
+      amountDialog.contentText = "Amount: "
+      val amountResult = amountDialog.showAndWait()
 
-      result match {
-        case Some(stockAndHoldings) => val Array(stock, holdingsString, purchaseDate) = stockAndHoldings.split("\\s+")
+      val dateDialog = new TextInputDialog(defaultValue = "Default Value")
+      dateDialog.title = "Purchase Date"
+      dateDialog.headerText = "Enter purchase date"
+      dateDialog.contentText = "Purchase Date (YYYY-MM): "
+      val dateResult = dateDialog.showAndWait()
+
+
+      (stockResult, amountResult, dateResult) match {
+        case (Some(stock), Some(holdings), Some(purchaseDate)) =>
+          try {
+            val stockValue = stock
+            val holdingResult = holdings.toDouble
+            val date = purchaseDate
+          } catch {
+            case _: NumberFormatException => ("Invalid", 0.0, "Invalid")
+          }
           val validDateFormat = "\\d{4}-\\d{2}".r
           if validDateFormat.findFirstIn(purchaseDate).isDefined then
-            val holdings = try {
-              holdingsString.toDouble
-            } catch {
-              case _: NumberFormatException => 0.0
-            }
-
             val existingStockIndex = stockEntries.indexWhere(_._1 == stock)
             if (existingStockIndex != -1) then
-             stockEntries(existingStockIndex) = (stock -> (stockEntries(existingStockIndex)._2 + holdings))
+             stockEntries(existingStockIndex) = (stock -> (stockEntries(existingStockIndex)._2 + holdings.toDouble))
             else
-             stockEntries += (stock -> holdings)
+             stockEntries += (stock -> holdings.toDouble)
+
 
           val stocksVisualize = stockEntries.toArray
-
           val stocksPlot = Visuals.ColumnChart().makeMultiColumnChart(stocksVisualize, purchaseDate)
           val pieChart = Visuals.Pie().makePie(stocksVisualize)
           val sumCard = Visuals.Card().makeSumCard(stocksVisualize)
@@ -107,7 +139,7 @@ object Main extends JFXApp3:
           tab += makeTab(stock, tableView, pieChart, sumCard, stocksPlot)
           rootPane.center = tab
 
-          case None => println("Dialog cancelled")
+        case _ => println("Dialog cancelled")
     }
     }
 

@@ -68,43 +68,46 @@ object Main extends JFXApp3:
 
     val tab = new TabPane
 
+    /**ArraBuffer that takes as parameters stock files and their multipliers*/
     val stockEntries: ArrayBuffer[(String, Double)] = ArrayBuffer()
     //createTab.onAction = (e: ActionEvent) => addButton.visible = true
 
+    /** Asks for the stocks and their multipliers */
     addButton.onAction = (e: ActionEvent) => {
       val textInput = new TextInputDialog(defaultValue = "Default Value")
       textInput.title = "Stock"
-      textInput.headerText = "Enter stock and amount"
+      textInput.headerText = "Enter stock, amount and purchase date"
       textInput.contentText = "Stock: "
 
       val result = textInput.showAndWait()
 
       result match {
-        case Some(stockAndHoldings) => val Array(stock, holdingsString) = stockAndHoldings.split("\\s+")
-          val holdings = try {
-            holdingsString.toDouble
-          } catch {
-            case _: NumberFormatException => 0.0
-          }
+        case Some(stockAndHoldings) => val Array(stock, holdingsString, purchaseDate) = stockAndHoldings.split("\\s+")
+          val validDateFormat = "\\d{4}-\\d{2}".r
+          if validDateFormat.findFirstIn(purchaseDate).isDefined then
+            val holdings = try {
+              holdingsString.toDouble
+            } catch {
+              case _: NumberFormatException => 0.0
+            }
 
-          val existingStockIndex = stockEntries.indexWhere(_._1 == stock)
-          if (existingStockIndex != -1) then
-           stockEntries(existingStockIndex) = (stock -> (stockEntries(existingStockIndex)._2 + holdings))
-          else
-           stockEntries += (stock -> holdings)
+            val existingStockIndex = stockEntries.indexWhere(_._1 == stock)
+            if (existingStockIndex != -1) then
+             stockEntries(existingStockIndex) = (stock -> (stockEntries(existingStockIndex)._2 + holdings))
+            else
+             stockEntries += (stock -> holdings)
 
-        val stocksVisualize = stockEntries.toArray
+          val stocksVisualize = stockEntries.toArray
 
-        val linePlot = Visuals.LinePlot().makeLinePlot("Apple.json")
-        val stocksPlot = Visuals.ColumnChart().makeMultiColumnChart(stocksVisualize)
-        val pieChart = Visuals.Pie().makePie(stocksVisualize)
-        val sumCard = Visuals.Card().makeSumCard(stocksVisualize)
-        val tableView = Visuals.CreateTable().tableView
+          val stocksPlot = Visuals.ColumnChart().makeMultiColumnChart(stocksVisualize, purchaseDate)
+          val pieChart = Visuals.Pie().makePie(stocksVisualize)
+          val sumCard = Visuals.Card().makeSumCard(stocksVisualize)
+          val tableView = Visuals.CreateTable().tableView
 
-        tab += makeTab(stock, tableView, pieChart, sumCard, stocksPlot)
-        rootPane.center = tab
+          tab += makeTab(stock, tableView, pieChart, sumCard, stocksPlot)
+          rootPane.center = tab
 
-        case None => println("Dialog cancelled")
+          case None => println("Dialog cancelled")
     }
     }
 

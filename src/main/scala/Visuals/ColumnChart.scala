@@ -19,8 +19,9 @@ class ColumnChart:
     makeColumnChart
     
     
-  def makeMultiColumnChart(stockList: Array[(String, Double)]) =
-    val priceData = Data.StockData().multiplyAndCombine(stockList)
+  def makeMultiColumnChart(stockList: Array[(String, Double)], purchaseDate: String) =
+    val combinedStocks = Data.StockData().multiplyAndCombine(stockList)
+    val priceData = Data.StockData().pricesFromMonth(combinedStocks, purchaseDate)
     
     val chartData = new XYChart.Series[String, Number]
     chartData.setName("Monthly Prices")

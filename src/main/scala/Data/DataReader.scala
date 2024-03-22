@@ -6,12 +6,14 @@ import java.net.URL
 import java.io.File
 import scala.io.Source
 import scala.util.Using
+import requests._
 
 
 class DataReader:
 
   val folderPath = os.Path("/APIFiles")
 
+  /**
   def fetchAPI() =
    val Ticker: String = readLine("Insert the stocks symbol:" ) //example AAPL
 
@@ -27,7 +29,15 @@ class DataReader:
      os.write.over(filePath, fileContent)
    }
 
-   println("File: " + fileName + " was imported succesfully " + url)
+   println("File: " + fileName + " was imported succesfully " + url) */
+
+
+  def getAPI(ticker: String) =
+
+    val url = new URL("https://www.alphavantage.co/query?function=TIME_SERIES_MONTHLY_ADJUSTED&symbol=" + ticker + "&apikey=SZPPN9IYEA485BC9&datatype=json")
+    val jsonString = Source.fromInputStream(url.openStream()).mkString
+    jsonString
+
 
 
 

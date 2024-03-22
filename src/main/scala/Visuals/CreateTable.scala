@@ -10,9 +10,12 @@ class CreateTable:
   def showPrice(fileName: String) =
     Data.StockData().latestPrice(fileName)
   
-  val testdata = ObservableBuffer(Table(showSymbol("Apple.json"), showPrice("Apple.json"), 10.0.toString, (showPrice("Apple.json").toDouble*10.0).toString),
-      Table(showSymbol("Netflix.json"), showPrice("Netflix.json"), 5.0.toString, (showPrice("Netflix.json").toDouble*5.0).toString))
-  val tableView = new TableView[Table](testdata)
+  /**val testdata = ObservableBuffer(Table(showSymbol("AAPL"), showPrice("AAPL"), 10.0.toString, (showPrice("AAPL").toDouble*10.0).toString),
+      Table(showSymbol("NFLX"), showPrice("NFLX"), 5.0.toString, (showPrice("NFLX").toDouble*5.0).toString))*/
+  
+  val tempData = ObservableBuffer(Table("AAPL", 200.0.toString, 10.0.toString, 2000.0.toString),
+      Table("NFLX", 620.5.toString, 5.0.toString, 3200.toString))
+  val tableView = new TableView[Table](tempData)
       tableView.prefWidth = 300
       tableView.prefHeight = 300
       val stockCol = new TableColumn[Table, String] {

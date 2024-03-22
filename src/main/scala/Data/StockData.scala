@@ -61,6 +61,8 @@ class StockData:
     val listStringDouble = s2toDouble(zipped)
     listStringDouble.toArray
 
+  //takes an array with months and their prices aswell as the purchase date
+  //returns an array that has been cut at the purchase date
   def pricesFromMonth(stockList: Array[(String, Double)], purchaseDate: String) =
     val filteredList = stockList.dropWhile{ case (month, _) => month.take(7) < purchaseDate}
     val result = filteredList.map((x,y)=>(x, y))
@@ -70,6 +72,7 @@ class StockData:
     val closingPrices = closePrice(fileName)
     closingPrices.head
 
+  //combines different stock prices
   def combineStockPrices(stockList: Array[String]): Array[(String, Double)] =
     val getStocks: Array[Array[(String, Double)]] = stockList.map(stock => zipDatesAndPrices(stock))
     val groupedStocks = getStocks.flatten.groupBy(_._1)
@@ -78,11 +81,13 @@ class StockData:
     val sorted = stocksToArray.sorted
     sorted
 
+  //multiplies the stocks value with desired multiplier
   def multiplyStocks(fileName: String, multiplier: Double) =
     val stockArray = zipDatesAndPrices(fileName)
     val result = stockArray.map((key, values) => (key, values * multiplier))
     result
 
+  //extracts the symbol of the stock
   def getSymbol(fileName: String) =
     val jsonString = os.read(os.pwd / "APIFiles" / fileName)
     val parsedJson = parseJson(jsonString)
@@ -90,6 +95,7 @@ class StockData:
     symbol
 
     //takes as parameter an Array with the stocks and their corresponding multiplier
+    //returns an array with months and the combined price of each stock that month
   def multiplyAndCombine(stockList: Array[(String, Double)]): Array[(String, Double)] =
     val makeArray = stockList.map((stock, multiplier) => multiplyStocks(stock, multiplier))
     val groupedStocks = makeArray.flatten.groupBy(_._1)
@@ -99,6 +105,7 @@ class StockData:
     sorted
 
 
+  //replace jsonString with this Data.DataReader().getAPI(fileName)
 
 
 

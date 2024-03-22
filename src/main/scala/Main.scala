@@ -3,7 +3,7 @@ import scalafx.application.JFXApp3
 import scalafx.event.ActionEvent
 import scalafx.scene.{Node, Scene}
 import scalafx.scene.control.{Button, Menu, MenuBar, MenuItem, ScrollPane, SelectionMode, Slider, SplitPane, Tab, TabPane, TableColumn, TableView, TextField, TextInputDialog, TreeView}
-import scalafx.scene.layout.{BorderPane, StackPane}
+import scalafx.scene.layout.{BorderPane, HBox, StackPane}
 import scalafx.stage.FileChooser
 import scalafx.stage.FileChooser.*
 import scalafx.Includes.*
@@ -134,16 +134,17 @@ object Main extends JFXApp3:
           val stocksPlot = Visuals.ColumnChart().makeMultiColumnChart(stocksVisualize, purchaseDate)
           val pieChart = Visuals.Pie().makePie(stocksVisualize)
           val sumCard = Visuals.Card().makeSumCard(stocksVisualize)
+          val growthCard = Visuals.Card().makeGrowthCard(stocksVisualize, purchaseDate)
           val tableView = Visuals.CreateTable().tableView
 
-          tab += makeTab(stock, tableView, pieChart, sumCard, stocksPlot)
+          tab += makeTab(stock, tableView, pieChart, sumCard, growthCard, stocksPlot)
           rootPane.center = tab
 
         case _ => println("Dialog cancelled")
     }
     }
 
-    def makeTab(stock: String, tableView: TableView[Table], pieChart: PieChart, sumCard: Node, stocksPlot: BarChart[String, Number]): Tab = {
+    def makeTab(stock: String, tableView: TableView[Table], pieChart: PieChart, sumCard: Node, growthCard: Node, stocksPlot: BarChart[String, Number]): Tab = {
       val tabTable = tableView
       val leftDown = new ScrollPane
       leftDown.content = tableView
@@ -157,9 +158,8 @@ object Main extends JFXApp3:
       left.orientation = Orientation.Vertical
       left.items ++= List(leftUp, leftDown)
 
-      val rightUp = new StackPane
-      rightUp.children = sumCard
-      rightUp.alignment = Pos.CenterLeft
+      val rightUp = new HBox
+      rightUp.children.addAll(sumCard, growthCard)
 
       val rightDown = new ScrollPane
       rightDown.content = stocksPlot

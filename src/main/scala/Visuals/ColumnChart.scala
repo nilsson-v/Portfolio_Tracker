@@ -22,7 +22,7 @@ class ColumnChart:
   def makeMultiColumnChart(stockList: Array[(String, Double)], purchaseDate: String) =
     val combinedStocks = Data.StockData().multiplyAndCombine(stockList)
     val priceData = Data.StockData().pricesFromMonth(combinedStocks, purchaseDate)
-    
+
     val chartData = new XYChart.Series[String, Number]
     chartData.setName("Monthly Prices")
     chartData.data = priceData.map(pd => XYChart.Data[String, Number](pd._1, pd._2))

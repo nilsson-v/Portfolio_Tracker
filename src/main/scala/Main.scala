@@ -77,6 +77,7 @@ object Main extends JFXApp3:
 
     /**ArraBuffer that takes as parameters stock files and their multipliers*/
     val stockEntries: ArrayBuffer[(String, Double)] = ArrayBuffer()
+    val dateEntries: ArrayBuffer[String] = ArrayBuffer()
     //createTab.onAction = (e: ActionEvent) => addButton.visible = true
 
 
@@ -111,7 +112,6 @@ object Main extends JFXApp3:
       dateDialog.contentText = "Purchase Date (YYYY-MM): "
       val dateResult = dateDialog.showAndWait()
 
-
       (stockResult, amountResult, dateResult) match {
         case (Some(stock), Some(holdings), Some(purchaseDate)) =>
           try {
@@ -123,22 +123,29 @@ object Main extends JFXApp3:
           }
           val validDateFormat = "\\d{4}-\\d{2}".r
           if validDateFormat.findFirstIn(purchaseDate).isDefined then
+            dateEntries += purchaseDate
             val existingStockIndex = stockEntries.indexWhere(_._1 == stock)
             if (existingStockIndex != -1) then
              stockEntries(existingStockIndex) = (stock -> (stockEntries(existingStockIndex)._2 + holdings.toDouble))
             else
              stockEntries += (stock -> holdings.toDouble)
 
-
           val stocksVisualize = stockEntries.toArray
-          val stocksPlot = Visuals.ColumnChart().makeMultiColumnChart(stocksVisualize, purchaseDate)
+          val stocksPlot = Visuals.ColumnChart().makeMultiColumnChart(stocksVisualize, dateEntries.min)
           val pieChart = Visuals.Pie().makePie(stocksVisualize)
           val sumCard = Visuals.Card().makeSumCard(stocksVisualize)
-          val growthCard = Visuals.Card().makeGrowthCard(stocksVisualize, purchaseDate)
+          val growthCard = Visuals.Card().makeGrowthCard(stocksVisualize, dateEntries.min)
           val tableView = Visuals.CreateTable().tableView
 
-          tab += makeTab(stock, tableView, pieChart, sumCard, growthCard, stocksPlot)
-          rootPane.center = tab
+          if tab.tabs.exists(tab => tab.getText == "Tracker") then
+            tab.getTabs.removeIf(tab => tab.getText == "Tracker")
+            println(tab.tabs.toString)
+            tab += makeTab(stock, tableView, pieChart, sumCard, growthCard, stocksPlot)
+            println(tab.tabs.toString)
+            rootPane.center = tab
+          else
+            tab += makeTab(stock, tableView, pieChart, sumCard, growthCard, stocksPlot)
+            rootPane.center = tab
 
         case _ => println("Dialog cancelled")
     }
@@ -178,7 +185,7 @@ object Main extends JFXApp3:
       top.dividerPositions = 0.3
 
       val makeTab = new Tab
-      makeTab.text = "Untitled"
+      makeTab.text = "Tracker"
       makeTab.content = top
       makeTab
 

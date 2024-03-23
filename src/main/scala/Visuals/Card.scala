@@ -43,7 +43,7 @@ class Card:
     sumCard.fill = Color.LightGrey
 
     val content = new Text
-    content.setText(roundedSum.toString)
+    content.setText("$"+roundedSum.toString)
     content.setFill(Color.Black)
     content.setFont(font)
 
@@ -83,7 +83,7 @@ class Card:
     growthCard.fill = boxColor
 
     val content = new Text
-    content.setText(sign + roundedGrowth.toString)
+    content.setText(sign + "$" + roundedGrowth.toString)
     content.setFill(Color.Black)
     content.setFont(font)
 
@@ -114,7 +114,7 @@ class Card:
     maxCard.fill = Color.LightSkyBlue
 
     val content = new Text
-    content.setText(maxValuePrint.toString)
+    content.setText("$"+maxValuePrint.toString)
     content.setFill(Color.Black)
     content.setFont(font)
 
@@ -146,7 +146,7 @@ class Card:
     minCard.fill = Color.LightSalmon
 
     val content = new Text
-    content.setText(minValuePrint.toString)
+    content.setText("$" + minValuePrint.toString)
     content.setFill(Color.Black)
     content.setFont(font)
 

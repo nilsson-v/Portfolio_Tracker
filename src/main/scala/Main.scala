@@ -203,9 +203,10 @@ object Main extends JFXApp3:
             series.getData.foreach( d => {
               val pointNode: scalafx.scene.Node = d.getNode
               val pointValue = d.getYValue.toString
-              println("this is a value for barchart: " + pointValue)
+              val pointMonth = d.getXValue
+              val roundedValue = BigDecimal(pointValue).setScale(1, BigDecimal.RoundingMode.HALF_UP)
               val tooltip = new Tooltip()
-              tooltip.setText(pointValue)
+              tooltip.setText(pointMonth + ": " + "$" + roundedValue.toString)
               tooltip.setStyle("-fx-background-color: yellow; " + "-fx-text-fill: black; ")
               Tooltip.install(pointNode, tooltip)
             })})
@@ -215,7 +216,6 @@ object Main extends JFXApp3:
           pieChart.getData.foreach( d => {
             val sliceNode: scalafx.scene.Node = d.getNode
             val pieValue = d.getPieValue
-            println("this is the PieValue: " + pieValue)
             val percent = (pieValue / total) * 100
             val msg = "%s: %.2f (%.2f%%)".format(d.getName, pieValue, percent)
             val tt = new Tooltip()

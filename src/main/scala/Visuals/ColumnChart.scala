@@ -21,14 +21,14 @@ class ColumnChart:
 
     val makeColumnChart = new BarChart[String, Number](xAxis, yAxis, ObservableBuffer(chartData))
     makeColumnChart
-    
+
   def makeMultiColumnChart(stockList: Array[(String, Double)], purchaseDate: String) =
     val combinedStocks = Data.StockData().multiplyAndCombine(stockList)
     val priceData = Data.StockData().pricesFromMonth(combinedStocks, purchaseDate)
 
     val chartData = new XYChart.Series[String, Number]
     chartData.setName("Monthly Prices")
-    chartData.data = priceData.map(pd => XYChart.Data[String, Number](pd._1, pd._2))
+    chartData.data = combinedStocks.map(pd => XYChart.Data[String, Number](pd._1, pd._2))
 
     val xAxis = CategoryAxis()
     val yAxis = NumberAxis()

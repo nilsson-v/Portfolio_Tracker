@@ -22,7 +22,7 @@ import scala.collection.mutable.ArrayBuffer
 object Main extends JFXApp3:
 
   def start() =
- 
+
     /** Creates the main stage */
     stage = new JFXApp3.PrimaryStage:
       title = "Networth tracker"
@@ -123,14 +123,16 @@ object Main extends JFXApp3:
           val pieChart = Visuals.Pie().makePie(stocksVisualize)
           val sumCard = Visuals.Card().makeSumCard(stocksVisualize)
           val growthCard = Visuals.Card().makeGrowthCard(stocksVisualize, dateEntries.min)
+          val maxCard = Visuals.Card().makeMaxCard(stocksVisualize, dateEntries.min)
+          val minCard = Visuals.Card().makeMinCard(stocksVisualize, dateEntries.min)
           val tableView = Visuals.CreateTable().tableView
     /** finally we update the tab and remove the old one */
           if tab.tabs.exists(tab => tab.getText == "Tracker") then
             tab.getTabs.removeIf(tab => tab.getText == "Tracker")
-            tab += makeTab(stock, tableView, pieChart, sumCard, growthCard, stocksPlot)
+            tab += makeTab(stock, tableView, pieChart, sumCard, growthCard, maxCard, minCard, stocksPlot)
             rootPane.center = tab
           else
-            tab += makeTab(stock, tableView, pieChart, sumCard, growthCard, stocksPlot)
+            tab += makeTab(stock, tableView, pieChart, sumCard, growthCard, maxCard, minCard, stocksPlot)
             rootPane.center = tab
 
         case _ => println("Dialog cancelled") } }
@@ -185,14 +187,16 @@ object Main extends JFXApp3:
           val pieChart = Visuals.Pie().makePie(stocksVisualize)
           val sumCard = Visuals.Card().makeSumCard(stocksVisualize)
           val growthCard = Visuals.Card().makeGrowthCard(stocksVisualize, dateEntries.min)
+          val maxCard = Visuals.Card().makeMaxCard(stocksVisualize, dateEntries.min)
+          val minCard = Visuals.Card().makeMinCard(stocksVisualize, dateEntries.min)
           val tableView = Visuals.CreateTable().tableView
     /** The tab gets an update and the old tab is removed. */
           if tab.tabs.exists(tab => tab.getText == "Tracker") then
             tab.getTabs.removeIf(tab => tab.getText == "Tracker")
-            tab += makeTab(stock, tableView, pieChart, sumCard, growthCard, stocksPlot)
+            tab += makeTab(stock, tableView, pieChart, sumCard, growthCard, maxCard, minCard, stocksPlot)
             rootPane.center = tab
           else
-            tab += makeTab(stock, tableView, pieChart, sumCard, growthCard, stocksPlot)
+            tab += makeTab(stock, tableView, pieChart, sumCard, growthCard, maxCard, minCard, stocksPlot)
             rootPane.center = tab
 
           stocksPlot.getData.foreach( series=> {
@@ -222,11 +226,11 @@ object Main extends JFXApp3:
         case _ => println("Dialog cancelled")
         }
      }
-   
+
     /** The function makeTab is responsible for creating the dashboard that visualizes all the data.
       * It takes as parameters the stock, a tableView, a pieChart, the cards and a barchart.
       * This paramaters represent visualisations and will be placed suitably on the dashboard. */
-    def makeTab(stock: String, tableView: TableView[Table], pieChart: PieChart, sumCard: Node, growthCard: Node, stocksPlot: BarChart[String, Number]): Tab = {
+    def makeTab(stock: String, tableView: TableView[Table], pieChart: PieChart, sumCard: Node, growthCard: Node, maxCard: Node, minCard: Node, stocksPlot: BarChart[String, Number]): Tab = {
       val tabTable = tableView
       val leftDown = new ScrollPane
       /** Left down tiles contains the table */
@@ -241,21 +245,21 @@ object Main extends JFXApp3:
       left.items ++= List(leftUp, leftDown)
       /** Right up tile contains all the cards with different calculations */
       val rightUp = new HBox
-      rightUp.children.addAll(sumCard, growthCard)
+      rightUp.children.addAll(sumCard, growthCard, maxCard, minCard)
       /** Right down contains the barchart visualising the stocks growth */
       val rightDown = new ScrollPane
       rightDown.content = stocksPlot
-      stocksPlot.prefHeight = 450
-      stocksPlot.prefWidth = 700
+      stocksPlot.prefHeight = 550
+      stocksPlot.prefWidth = 750
       /** The following variables create the 2-by-2 tile format and the tab where the visuals are shown */
       val slider = new Slider(0, 800, 0)
       val right = new SplitPane
       right.orientation = Orientation.Vertical
       right.items ++= List(rightUp,rightDown)
-      right.dividerPositions = 0.3
+      right.dividerPositions = 0.15
       val top = new SplitPane
       top.items ++= List(left, right)
-      top.dividerPositions = 0.3
+      top.dividerPositions = 0.33
       val makeTab = new Tab
       makeTab.text = "Tracker"
       makeTab.content = top

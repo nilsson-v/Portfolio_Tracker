@@ -1,5 +1,6 @@
 package Visuals
 
+import scalafx.application.Platform
 import scalafx.geometry.Pos
 import scalafx.scene.control.Label
 import scalafx.scene.layout.VBox
@@ -37,9 +38,9 @@ class Card:
     label.setFont(font)
 
     val sumCard = new Rectangle
-    sumCard.width = 200
+    sumCard.width = 250
     sumCard.height = 150
-    sumCard.fill = Color.LightBlue
+    sumCard.fill = Color.LightGrey
 
     val content = new Text
     content.setText(roundedSum.toString)
@@ -77,7 +78,7 @@ class Card:
     label.setFont(font)
 
     val growthCard = new Rectangle
-    growthCard.width = 200
+    growthCard.width = 250
     growthCard.height = 150
     growthCard.fill = boxColor
 
@@ -93,6 +94,69 @@ class Card:
     growthNode
 
   end makeGrowthCard
+
+  def makeMaxCard(stockList: Array[(String, Double)], purchaseDate: String): scalafx.scene.Node =
+
+    val combinedStocks = Data.StockData().multiplyAndCombine(stockList)
+    val priceData = Data.StockData().pricesFromMonth(combinedStocks, purchaseDate)
+    val maxValue = priceData.map(_._2).max
+    val maxValuePrint = BigDecimal(maxValue).setScale(1, BigDecimal.RoundingMode.HALF_UP)
+
+    val cardContent = new VBox
+    val label = new Label("All-time high")
+    cardContent.setAlignment(Pos.Center)
+    label.setTextFill(Color.Black)
+    label.setFont(font)
+
+    val maxCard = new Rectangle
+    maxCard.width = 250
+    maxCard.height = 150
+    maxCard.fill = Color.LightSkyBlue
+
+    val content = new Text
+    content.setText(maxValuePrint.toString)
+    content.setFill(Color.Black)
+    content.setFont(font)
+
+    cardContent.getChildren.addAll(label, content)
+
+    val maxNode: scalafx.scene.Node = new scalafx.scene.Group(maxCard, cardContent)
+
+    maxNode
+
+  end makeMaxCard
+
+
+  def makeMinCard(stockList: Array[(String, Double)], purchaseDate: String): scalafx.scene.Node =
+
+    val combinedStocks = Data.StockData().multiplyAndCombine(stockList)
+    val priceData = Data.StockData().pricesFromMonth(combinedStocks, purchaseDate)
+    val minValue = priceData.map(_._2).min
+    val minValuePrint = BigDecimal(minValue).setScale(1, BigDecimal.RoundingMode.HALF_UP)
+
+    val cardContent = new VBox
+    val label = new Label("All-time low")
+    cardContent.setAlignment(Pos.Center)
+    label.setTextFill(Color.Black)
+    label.setFont(font)
+
+    val minCard = new Rectangle
+    minCard.width = 250
+    minCard.height = 150
+    minCard.fill = Color.LightSalmon
+
+    val content = new Text
+    content.setText(minValuePrint.toString)
+    content.setFill(Color.Black)
+    content.setFont(font)
+
+    cardContent.getChildren.addAll(label, content)
+
+    val minNode: scalafx.scene.Node = new scalafx.scene.Group(minCard, cardContent)
+
+    minNode
+
+  end makeMinCard
 
 
 

@@ -2,6 +2,10 @@ package Visuals
 
 import scalafx.collections.ObservableBuffer
 import scalafx.scene.chart.{BarChart, CategoryAxis, NumberAxis, XYChart}
+import scalafx.scene.control
+import javafx.scene.control.Tooltip
+import scalafx.scene.Node
+
 
 class ColumnChart:
   
@@ -18,7 +22,6 @@ class ColumnChart:
     val makeColumnChart = new BarChart[String, Number](xAxis, yAxis, ObservableBuffer(chartData))
     makeColumnChart
     
-    
   def makeMultiColumnChart(stockList: Array[(String, Double)], purchaseDate: String) =
     val combinedStocks = Data.StockData().multiplyAndCombine(stockList)
     val priceData = Data.StockData().pricesFromMonth(combinedStocks, purchaseDate)
@@ -31,4 +34,5 @@ class ColumnChart:
     val yAxis = NumberAxis()
 
     val makeColumnChart = new BarChart[String, Number](xAxis, yAxis, ObservableBuffer(chartData))
+
     makeColumnChart

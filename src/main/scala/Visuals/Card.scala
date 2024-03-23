@@ -46,10 +46,9 @@ class Card:
     content.setFill(Color.Black)
     content.setFont(font)
 
-
     cardContent.getChildren.addAll(label, content)
 
-    val sumNode: javafx.scene.Node = new javafx.scene.Group(sumCard, cardContent)
+    val sumNode: scalafx.scene.Node = new scalafx.scene.Group(sumCard, cardContent)
 
     sumNode
 
@@ -89,7 +88,7 @@ class Card:
 
     cardContent.getChildren.addAll(label, content)
 
-    val growthNode: javafx.scene.Node = new javafx.scene.Group(growthCard, cardContent)
+    val growthNode: scalafx.scene.Node = new scalafx.scene.Group(growthCard, cardContent)
 
     growthNode
 

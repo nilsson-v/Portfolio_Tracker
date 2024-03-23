@@ -1,4 +1,6 @@
 import Visuals.Table
+import scalafx.scene.control
+import scalafx.scene.control.Tooltip
 import scalafx.application.JFXApp3
 import scalafx.event.ActionEvent
 import scalafx.scene.{Node, Scene}
@@ -10,6 +12,9 @@ import scalafx.Includes.*
 import scalafx.beans.property.{ReadOnlyStringWrapper, StringProperty}
 import scalafx.geometry.{Orientation, Pos}
 import scalafx.scene.chart.{BarChart, PieChart}
+import scalafx.scene.paint.Color
+import scalafx.scene.shape.Rectangle
+import scala.jdk.CollectionConverters
 
 import scala.collection.mutable.ArrayBuffer
 
@@ -17,7 +22,8 @@ import scala.collection.mutable.ArrayBuffer
 object Main extends JFXApp3:
 
   def start() =
-
+ 
+    /** Creates the main stage */
     stage = new JFXApp3.PrimaryStage:
       title = "Networth tracker"
       width = 800
@@ -28,7 +34,8 @@ object Main extends JFXApp3:
     val scene = Scene(parent = rootPane)
     stage.scene = scene
 
-    /**Menu bar*/
+    /**This section contains the menu bar with all the other options
+     * menubar consists of: fileMenu, createMenu, controlMenu and ChartMenu*/
 
     val menuBar = new MenuBar
 
@@ -63,36 +70,74 @@ object Main extends JFXApp3:
     rootPane.top = menuBar
 
     /** Menubar actions */
-    //importFile.onAction = Data.DataReader().fetchAPI()
-    //exportFile.onAction = ???
     openFile.onAction = (e: ActionEvent) => {
       val fileChooser = new FileChooser
       val selected = fileChooser.showOpenDialog(stage)
     }
 
-    /** Tab Pane */
-    //val linePlotChart = Visuals.Chart().makeLinePlot
-
+    /** This section is the most relevant for making the dashboard tab
+     * first we create a new TabPane */
     val tab = new TabPane
 
-    /**ArraBuffer that takes as parameters stock files and their multipliers*/
+    /**stockEntries: ArrayBuffer that takes as parameters stock files and their multipliers
+     *dateEntries: ArrayBuffer that saves the purchaseDates to create the graph with the correct timeline */
     val stockEntries: ArrayBuffer[(String, Double)] = ArrayBuffer()
     val dateEntries: ArrayBuffer[String] = ArrayBuffer()
-    //createTab.onAction = (e: ActionEvent) => addButton.visible = true
 
+    /** The remove button: this button is responsible for removing stocks.
+     * When pressing the button an prompt will appear asking for what stock and how much of it should be removed */
+    removeButton.onAction = (e: ActionEvent) => {
+      val stockDialog = new TextInputDialog(defaultValue = "Default Value")
+      stockDialog.title = "Stock"
+      stockDialog.headerText = "Enter stock"
+      stockDialog.contentText = "Stock: "
+      val stockResult = stockDialog.showAndWait()
 
-   /** def removeStockAmount(stock: String, amountToRemove: Double) =
-      val existingStockIndex = stockEntries.indexWhere(_._1 == stock)
-      if (existingStockIndex != -1) then
-        val updatedAmount = stockEntries(existingStockIndex)._2 - amountToRemove
-        if (updatedAmount >= 0) then
-          stockEntries(existingStockIndex) = (stock -> updatedAmount)
-          updateTab(stock, updatedAmount)
+      val amountDialog = new TextInputDialog(defaultValue = "Default Value")
+      amountDialog.title = "Amount"
+      amountDialog.headerText = "Enter amount"
+      amountDialog.contentText = "Amount: "
+      val amountResult = amountDialog.showAndWait()
 
-    removeButton.onAction = */
+    /** The input will be matched and handled accordingly
+      * The stock input will be used to check where the stock is in the array.
+      * When the stocks position has been found in the array, the desired amount will be reduced from that stocks current amount
+      * Lastly the stockEntries will be update with the new value*/
+      (stockResult, amountResult) match {
+        case (Some(stock), Some(holdings)) =>
+          try {
+            val stockValue = stock
+            val holdingResult = holdings.toDouble
+          } catch {
+            case _: NumberFormatException => ("Invalid", 0.0) }
+            val index = stockEntries.indexWhere(_._1 == stock)
+            if (index != -1) then
+              val (key, value) = stockEntries(index)
+              val newValue = value - holdings.toDouble
+              stockEntries(index) = (key, newValue)
+            else
+              println("Stock not found")
+    /** The visualisations will also be updated after the array has been updated */
+          val stocksVisualize = stockEntries.toArray
+          val stocksPlot = Visuals.ColumnChart().makeMultiColumnChart(stocksVisualize, dateEntries.min)
+          val pieChart = Visuals.Pie().makePie(stocksVisualize)
+          val sumCard = Visuals.Card().makeSumCard(stocksVisualize)
+          val growthCard = Visuals.Card().makeGrowthCard(stocksVisualize, dateEntries.min)
+          val tableView = Visuals.CreateTable().tableView
+    /** finally we update the tab and remove the old one */
+          if tab.tabs.exists(tab => tab.getText == "Tracker") then
+            tab.getTabs.removeIf(tab => tab.getText == "Tracker")
+            tab += makeTab(stock, tableView, pieChart, sumCard, growthCard, stocksPlot)
+            rootPane.center = tab
+          else
+            tab += makeTab(stock, tableView, pieChart, sumCard, growthCard, stocksPlot)
+            rootPane.center = tab
 
+        case _ => println("Dialog cancelled") } }
 
-    /** Asks for the stocks, their multipliers and purchase date */
+    /** The add button: responsible for adding stocks to the dashboard.
+     * When pressing the addbutton the user will be prompted to input the stock, its amount and purchaseDate*/
+    //todo Error handling if stock is not in files!!
     addButton.onAction = (e: ActionEvent) => {
       val stockDialog = new TextInputDialog(defaultValue = "Default Value")
       stockDialog.title = "Stock"
@@ -111,7 +156,12 @@ object Main extends JFXApp3:
       dateDialog.headerText = "Enter purchase date"
       dateDialog.contentText = "Purchase Date (YYYY-MM): "
       val dateResult = dateDialog.showAndWait()
-
+    /** The stock, amount and date will be matched.
+      * the amount will be checked if it can be converted to a double.
+      * The date will be checked if it is in the right format and added to the date entries array.
+      * If theese two pass the stock will be checked if it is a new one or an existing one.
+      * If it already exist, only the amount will be added to the existing part in the stocks array.
+      * If it is a new one the whole package will be added to the stocks array. */
       (stockResult, amountResult, dateResult) match {
         case (Some(stock), Some(holdings), Some(purchaseDate)) =>
           try {
@@ -129,66 +179,87 @@ object Main extends JFXApp3:
              stockEntries(existingStockIndex) = (stock -> (stockEntries(existingStockIndex)._2 + holdings.toDouble))
             else
              stockEntries += (stock -> holdings.toDouble)
-
+    /** The visualisations will also be updated after the array has been updated */
           val stocksVisualize = stockEntries.toArray
           val stocksPlot = Visuals.ColumnChart().makeMultiColumnChart(stocksVisualize, dateEntries.min)
           val pieChart = Visuals.Pie().makePie(stocksVisualize)
           val sumCard = Visuals.Card().makeSumCard(stocksVisualize)
           val growthCard = Visuals.Card().makeGrowthCard(stocksVisualize, dateEntries.min)
           val tableView = Visuals.CreateTable().tableView
-
+    /** The tab gets an update and the old tab is removed. */
           if tab.tabs.exists(tab => tab.getText == "Tracker") then
             tab.getTabs.removeIf(tab => tab.getText == "Tracker")
-            println(tab.tabs.toString)
             tab += makeTab(stock, tableView, pieChart, sumCard, growthCard, stocksPlot)
-            println(tab.tabs.toString)
             rootPane.center = tab
           else
             tab += makeTab(stock, tableView, pieChart, sumCard, growthCard, stocksPlot)
             rootPane.center = tab
 
-        case _ => println("Dialog cancelled")
-    }
-    }
+          stocksPlot.getData.foreach( series=> {
+            series.getData.foreach( d => {
+              val pointNode: scalafx.scene.Node = d.getNode
+              val pointValue = d.getYValue.toString
+              println("this is a value for barchart: " + pointValue)
+              val tooltip = new Tooltip()
+              tooltip.setText(pointValue)
+              tooltip.setStyle("-fx-background-color: yellow; " + "-fx-text-fill: black; ")
+              Tooltip.install(pointNode, tooltip)
+            })})
 
+          val total = pieChart.getData.foldLeft(0.0) {(x, y) => x + y.getPieValue}
+
+          pieChart.getData.foreach( d => {
+            val sliceNode: scalafx.scene.Node = d.getNode
+            val pieValue = d.getPieValue
+            println("this is the PieValue: " + pieValue)
+            val percent = (pieValue / total) * 100
+            val msg = "%s: %.2f (%.2f%%)".format(d.getName, pieValue, percent)
+            val tt = new Tooltip()
+            tt.setText(msg)
+            tt.setStyle("-fx-background-color: yellow; " +  "-fx-text-fill: black; ")
+            Tooltip.install(sliceNode, tt) })
+
+        case _ => println("Dialog cancelled")
+        }
+     }
+   
+    /** The function makeTab is responsible for creating the dashboard that visualizes all the data.
+      * It takes as parameters the stock, a tableView, a pieChart, the cards and a barchart.
+      * This paramaters represent visualisations and will be placed suitably on the dashboard. */
     def makeTab(stock: String, tableView: TableView[Table], pieChart: PieChart, sumCard: Node, growthCard: Node, stocksPlot: BarChart[String, Number]): Tab = {
       val tabTable = tableView
       val leftDown = new ScrollPane
+      /** Left down tiles contains the table */
       leftDown.content = tableView
       tableView.prefWidth = 600
       tabTable.prefHeight = 500
-
+      /** Left up tile contains the pie  */
       val leftUp = new ScrollPane
       leftUp.content = pieChart
       val left = new SplitPane
-
       left.orientation = Orientation.Vertical
       left.items ++= List(leftUp, leftDown)
-
+      /** Right up tile contains all the cards with different calculations */
       val rightUp = new HBox
       rightUp.children.addAll(sumCard, growthCard)
-
+      /** Right down contains the barchart visualising the stocks growth */
       val rightDown = new ScrollPane
       rightDown.content = stocksPlot
       stocksPlot.prefHeight = 450
       stocksPlot.prefWidth = 700
-
+      /** The following variables create the 2-by-2 tile format and the tab where the visuals are shown */
       val slider = new Slider(0, 800, 0)
-
       val right = new SplitPane
       right.orientation = Orientation.Vertical
       right.items ++= List(rightUp,rightDown)
       right.dividerPositions = 0.3
-
       val top = new SplitPane
       top.items ++= List(left, right)
       top.dividerPositions = 0.3
-
       val makeTab = new Tab
       makeTab.text = "Tracker"
       makeTab.content = top
       makeTab
-
     }
 
     createTable.onAction = (e: ActionEvent) => tab += makeTableTab()
@@ -201,38 +272,39 @@ object Main extends JFXApp3:
       makeTab
       }
 
+    /** In this section are all the action buttons for creating the different plot/chart types.
+      * These charts can be created on a separate tab and show the all time progress of a single stock.
+      * These are great if the user wants to inspect one specific stock and its progress.*/
+    /** The columnn plot **/
     createColumnPlot.onAction = (e: ActionEvent) => {
       val text = new TextInputDialog(defaultValue = "Default Value")
       text.title = "Stock"
       text.headerText = "Input file: "
       text.contentText = "File: "
-
       val result = text.showAndWait()
       result match {
         case Some(fileName) => tab += makeColumnPlot(fileName)
         case _ => None
       }
     }
-
+    /** The line plot */
     createLinePlot.onAction = (e: ActionEvent) => {
       val text = new TextInputDialog(defaultValue = "Default Value")
       text.title = "Stock"
       text.headerText = "Input file: "
       text.contentText = "File: "
-
       val result = text.showAndWait()
       result match {
         case Some(fileName) => tab += makeLinePlot(fileName)
         case _ => None
        }
      }
-
+    /** The scatter plot */
     createScatterPlot.onAction = (e: ActionEvent) => {
       val text = new TextInputDialog(defaultValue = "Default Value")
       text.title = "Stock"
       text.headerText = "Input file: "
       text.contentText = "File: "
-
       val result = text.showAndWait()
       result match {
         case Some(fileName) => tab += makeScatterPlot(fileName)
@@ -240,6 +312,8 @@ object Main extends JFXApp3:
       }
     }
 
+    /** In this section are the corresponding functions that create the plots on the action events above */
+    /** The column plot */
     def makeColumnPlot(fileName: String): Tab = {
       val columnPlot = Visuals.ColumnChart().makeColumnChart(fileName)
       val makeTab = new Tab
@@ -247,7 +321,7 @@ object Main extends JFXApp3:
       makeTab.content = columnPlot
       makeTab
     }
-
+    /** The line plot */
      def makeLinePlot(fileName: String): Tab = {
       val linePlot = Visuals.LinePlot().makeLinePlot(fileName)
       val makeTab = new Tab
@@ -255,7 +329,7 @@ object Main extends JFXApp3:
       makeTab.content = linePlot
       makeTab
     }
-
+    /** The scatter plot */
     def makeScatterPlot(fileName: String): Tab = {
       val scatterPlot = Visuals.ScatterPlot().makeScatterPlot(fileName)
       val makeTab = new Tab
@@ -263,14 +337,6 @@ object Main extends JFXApp3:
       makeTab.content = scatterPlot
       makeTab
     }
-
-
-    //hideTable.onAction = (e: ActionEvent) => tableView.visible = false
-
-    //Data.DataReader().fetchAPI()
-
-
-
 
   end start
 

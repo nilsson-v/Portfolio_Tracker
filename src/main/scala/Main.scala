@@ -81,7 +81,7 @@ object Main extends JFXApp3:
 
     /**stockEntries: ArrayBuffer that takes as parameters stock files and their multipliers
      *dateEntries: ArrayBuffer that saves the purchaseDates to create the graph with the correct timeline */
-    val stockEntries: ArrayBuffer[(String, Double)] = ArrayBuffer()
+    var stockEntries: ArrayBuffer[(String, Double)] = ArrayBuffer()
     val dateEntries: ArrayBuffer[String] = ArrayBuffer()
 
     /** The remove button: this button is responsible for removing stocks.
@@ -114,17 +114,22 @@ object Main extends JFXApp3:
             if (index != -1) then
               val (key, value) = stockEntries(index)
               val newValue = value - holdings.toDouble
-              stockEntries(index) = (key, newValue)
+              if newValue == 0 then
+                stockEntries = stockEntries.filter((key, _) => key != stock)
+                if dateEntries.length > 1 then
+                  dateEntries.remove(index)
+              else
+                stockEntries(index) = (key, newValue)
             else
               println("Stock not found")
     /** The visualisations will also be updated after the array has been updated */
           val stocksVisualize = stockEntries.toArray
-          val stocksPlot = Visuals.ColumnChart().makeMultiColumnChart(stocksVisualize, dateEntries.min)
+          val stocksPlot = Visuals.ColumnChart().makeMultiColumnChart(stocksVisualize, dateEntries.toArray)
           val pieChart = Visuals.Pie().makePie(stocksVisualize)
           val sumCard = Visuals.Card().makeSumCard(stocksVisualize)
-          val growthCard = Visuals.Card().makeGrowthCard(stocksVisualize, dateEntries.min)
-          val maxCard = Visuals.Card().makeMaxCard(stocksVisualize, dateEntries.min)
-          val minCard = Visuals.Card().makeMinCard(stocksVisualize, dateEntries.min)
+          val growthCard = Visuals.Card().makeGrowthCard(stocksVisualize, dateEntries.toArray)
+          val maxCard = Visuals.Card().makeMaxCard(stocksVisualize, dateEntries.toArray)
+          val minCard = Visuals.Card().makeMinCard(stocksVisualize, dateEntries.toArray)
           val tableView = Visuals.CreateTable().tableView
     /** finally we update the tab and remove the old one */
           if tab.tabs.exists(tab => tab.getText == "Tracker") then
@@ -183,12 +188,12 @@ object Main extends JFXApp3:
              stockEntries += (stock -> holdings.toDouble)
     /** The visualisations will also be updated after the array has been updated */
           val stocksVisualize = stockEntries.toArray
-          val stocksPlot = Visuals.ColumnChart().makeMultiColumnChart(stocksVisualize, dateEntries.min)
+          val stocksPlot = Visuals.ColumnChart().makeMultiColumnChart(stocksVisualize, dateEntries.toArray)
           val pieChart = Visuals.Pie().makePie(stocksVisualize)
           val sumCard = Visuals.Card().makeSumCard(stocksVisualize)
-          val growthCard = Visuals.Card().makeGrowthCard(stocksVisualize, dateEntries.min)
-          val maxCard = Visuals.Card().makeMaxCard(stocksVisualize, dateEntries.min)
-          val minCard = Visuals.Card().makeMinCard(stocksVisualize, dateEntries.min)
+          val growthCard = Visuals.Card().makeGrowthCard(stocksVisualize, dateEntries.toArray)
+          val maxCard = Visuals.Card().makeMaxCard(stocksVisualize, dateEntries.toArray)
+          val minCard = Visuals.Card().makeMinCard(stocksVisualize, dateEntries.toArray)
           val tableView = Visuals.CreateTable().tableView
     /** The tab gets an update and the old tab is removed. */
           if tab.tabs.exists(tab => tab.getText == "Tracker") then

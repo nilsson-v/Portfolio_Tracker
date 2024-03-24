@@ -56,10 +56,9 @@ class Card:
   end makeSumCard
 
 
-  def makeGrowthCard(stockList: Array[(String, Double)], purchaseDate: String) =
-    val combinedStocks = Data.StockData().multiplyAndCombine(stockList)
-    val priceData = Data.StockData().pricesFromMonth(combinedStocks, purchaseDate)
-    val growthAmount = (priceData.last._2 - priceData.head._2)
+  def makeGrowthCard(stockList: Array[(String, Double)], purchaseDates: Array[String]) =
+    val priceData = Data.StockData().pricesFromMonthv3(stockList, purchaseDates)
+    val growthAmount = if stockList.nonEmpty then (priceData.last._2 - priceData.head._2) else 0
     val roundedGrowth = BigDecimal(growthAmount).setScale(1, BigDecimal.RoundingMode.HALF_UP)
     val sign: String = if growthAmount > 0 then
       "+"
@@ -95,11 +94,10 @@ class Card:
 
   end makeGrowthCard
 
-  def makeMaxCard(stockList: Array[(String, Double)], purchaseDate: String): scalafx.scene.Node =
+  def makeMaxCard(stockList: Array[(String, Double)], purchaseDates: Array[String]): scalafx.scene.Node =
 
-    val combinedStocks = Data.StockData().multiplyAndCombine(stockList)
-    val priceData = Data.StockData().pricesFromMonth(combinedStocks, purchaseDate)
-    val maxValue = priceData.map(_._2).max
+    val priceData = Data.StockData().pricesFromMonthv3(stockList, purchaseDates)
+    val maxValue = if priceData.nonEmpty then priceData.map(_._2).max else 0
     val maxValuePrint = BigDecimal(maxValue).setScale(1, BigDecimal.RoundingMode.HALF_UP)
 
     val cardContent = new VBox
@@ -127,11 +125,10 @@ class Card:
   end makeMaxCard
 
 
-  def makeMinCard(stockList: Array[(String, Double)], purchaseDate: String): scalafx.scene.Node =
+  def makeMinCard(stockList: Array[(String, Double)], purchaseDates: Array[String]): scalafx.scene.Node =
 
-    val combinedStocks = Data.StockData().multiplyAndCombine(stockList)
-    val priceData = Data.StockData().pricesFromMonth(combinedStocks, purchaseDate)
-    val minValue = priceData.map(_._2).min
+    val priceData = Data.StockData().pricesFromMonthv3(stockList, purchaseDates)
+    val minValue = if priceData.nonEmpty then priceData.map(_._2).min else 0
     val minValuePrint = BigDecimal(minValue).setScale(1, BigDecimal.RoundingMode.HALF_UP)
 
     val cardContent = new VBox

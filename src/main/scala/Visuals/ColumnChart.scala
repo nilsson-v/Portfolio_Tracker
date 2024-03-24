@@ -22,9 +22,8 @@ class ColumnChart:
     val makeColumnChart = new BarChart[String, Number](xAxis, yAxis, ObservableBuffer(chartData))
     makeColumnChart
 
-  def makeMultiColumnChart(stockList: Array[(String, Double)], purchaseDate: String) =
-    val combinedStocks = Data.StockData().multiplyAndCombine(stockList)
-    val priceData = Data.StockData().pricesFromMonth(combinedStocks, purchaseDate)
+  def makeMultiColumnChart(stockList: Array[(String, Double)], purchaseDates: Array[String]) =
+    val priceData = Data.StockData().pricesFromMonthv3(stockList, purchaseDates)
 
     val chartData = new XYChart.Series[String, Number]
     chartData.setName("Monthly Prices")

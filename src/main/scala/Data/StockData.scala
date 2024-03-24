@@ -7,10 +7,11 @@ import org.json4s.{DefaultFormats, JField, JObject, JString, jvalue2extractable,
 import org.json4s.jackson.{JsonMethods, parseJson, parseJsonOpt}
 import akka.actor.ActorSystem
 import akka.stream.scaladsl.{Sink, Source as AkkaSource}
-import scala.concurrent.duration._
+
+import scala.concurrent.duration.*
 import scalafx.collections.ObservableBuffer
 
-import scala.collection.mutable.ListBuffer
+import scala.collection.mutable.{ArrayBuffer, ListBuffer}
 import scala.concurrent.Await
 import scala.io.Source
 
@@ -103,6 +104,28 @@ class StockData:
     val stocksToArray = combinedStocks.toArray
     val sorted = stocksToArray.sorted
     sorted
+
+  def pricesFromMonthv2(stockList: Array[(String, Double)], purchaseDates: Array[String]) =
+    var resultArray = ArrayBuffer[Array[(String, Double)]]()
+    val zipList = stockList.map((stock, multiplier) => (zipDatesAndPrices(stock), multiplier))
+    val multiplyStock = zipList.map((zipped, multiplier) => zipped.map((key, values) => (key, values * multiplier)))
+    val cutDates = { for i <- multiplyStock.indices do
+      resultArray += multiplyStock(i).dropWhile{ case (month, _) => month.take(7) < purchaseDates(i)} }
+    val mapArray = resultArray.flatten.groupBy(_._1)
+    val combinedStocks = mapArray.map((key, values) => (key, values.map(_._2).sum))
+    val stocksToArray = combinedStocks.toArray
+    stocksToArray.sorted
+
+  def  pricesFromMonthv3(stockList: Array[(String, Double)], purchaseDates: Array[String]) =
+    val zipList = stockList.zip(purchaseDates)
+    val filteredStockData = zipList.map { case ((stock, multiplier), purchaseDate) =>
+      val stockData = zipDatesAndPrices(stock)
+      val filteredData = stockData.dropWhile { case (month, _) => month.take(7) < purchaseDate }
+      filteredData.map { case (month, price) => (month, price * multiplier) }
+    }
+    val combinedData = filteredStockData.flatten.groupBy(_._1).view.mapValues(_.map(_._2).sum)
+    combinedData.toArray.sorted
+
 
 
   //replace jsonString with this Data.DataReader().getAPI(fileName)

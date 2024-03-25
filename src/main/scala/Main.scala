@@ -110,27 +110,49 @@ object Main extends JFXApp3:
             val holdingResult = holdings.toDouble
           } catch {
             case _: NumberFormatException => ("Invalid", 0.0) }
+
+            /** finds the corresponding indexes for each Array */
             val index = stockEntries.indexWhere(_._1 == stock)
             val index2 = stockEntries2.indexWhere(_._1 == stock)
-            val indexes = for { i <- stockEntries2.indices
-              if stockEntries2(i)._1 == stock } yield i
-            if (index != -1) then
+
+            /** if there is more than one of the same stock we make a index list*/
+            if (index != -1 && index2 != -1) then
+              val indexes = stockEntries2.indices.filter(i => stockEntries2(i)._1 == stock).sorted(Ordering[Int].reverse)
+              var remainingHoldings = holdings.toDouble
+
+              /** iterate through the indexes, removing/updating holdings in stockEntries2's by updating last index first of the given stock
+               * if the index goes to 0 the corresponding date gets removed and the process continues to the next index. */
+              for i <- indexes do
+                if remainingHoldings > 0 then
+                  val (_, value) = stockEntries2(i)
+                  val newValue = value - remainingHoldings
+                  if newValue <= 0 then
+                    stockEntries2.remove(i)
+                    remainingHoldings = Math.abs(newValue)
+                    if i < dateEntries2.length then
+                      dateEntries2.remove(i)
+                  else
+                    stockEntries2(i) = (stock, newValue)
+                    remainingHoldings = 0
+
+              /** remove/update the index from the stockEntries */
               val (key, value) = stockEntries(index)
-              var newValue = value - holdings.toDouble
-              if newValue == 0 then
-                stockEntries = stockEntries.filter((key, _) => key != stock)
-                stockEntries2 = stockEntries2.filter((key, _) => key != stock)
-                if dateEntries.length == 1 then
-                  dateEntries2 = ArrayBuffer.empty[String]
-                  dateEntries.remove(index)
-                else if dateEntries.nonEmpty then
-                  dateEntries.remove(index)
-                  dateEntries2.remove(index2)
-              else
-                stockEntries(index) = (key, newValue)
-                stockEntries2(index2) = (key, newValue)
-            else
-              println("Stock not found")
+              val newValue = value - holdings.toDouble
+               if (newValue <= 0) then
+                 stockEntries.remove(index)
+               else
+                  stockEntries(index) = (stock, newValue)
+
+              /** update/remove their corresponding dates */
+               if newValue == 0 then
+                 if dateEntries.length == 1 then
+                   dateEntries.remove(index)
+                   dateEntries2 = ArrayBuffer.empty[String]
+                 else if dateEntries.nonEmpty then
+                   dateEntries.remove(index)
+
+
+            else println("Stock not found")
           println("here I remove a stock")
           println(stockEntries)
           println(dateEntries)
@@ -228,6 +250,7 @@ object Main extends JFXApp3:
              stockEntries += (stock -> holdings.toDouble)
              dateEntries += purchaseDate
            /** Debugging */
+          println("here I add a stock")
           println(stockEntries)
           println(dateEntries)
           println(stockEntries2)

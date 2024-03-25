@@ -49,9 +49,7 @@ object Main extends JFXApp3:
     val createLinePlot = new MenuItem("Line Plot")
     val createColumnPlot = new MenuItem("Column Plot")
     val createScatterPlot = new MenuItem("Scatter Plot")
-    val createTable = new MenuItem("Table")
-    val createTab = new MenuItem("Tab")
-    createMenu.items = List(createLinePlot, createColumnPlot, createScatterPlot ,createTable, createTab)
+    createMenu.items = List(createLinePlot, createColumnPlot, createScatterPlot)
 
     val controlMenu = new Menu("Control Panel")
     val hideTable = new MenuItem("Hide Table")
@@ -82,7 +80,9 @@ object Main extends JFXApp3:
     /**stockEntries: ArrayBuffer that takes as parameters stock files and their multipliers
      *dateEntries: ArrayBuffer that saves the purchaseDates to create the graph with the correct timeline */
     var stockEntries: ArrayBuffer[(String, Double)] = ArrayBuffer()
-    val dateEntries: ArrayBuffer[String] = ArrayBuffer()
+    var stockEntries2: ArrayBuffer[(String, Double)] = ArrayBuffer()
+    var dateEntries: ArrayBuffer[String] = ArrayBuffer()
+    var dateEntries2: ArrayBuffer[String] = ArrayBuffer()
 
     /** The remove button: this button is responsible for removing stocks.
      * When pressing the button an prompt will appear asking for what stock and how much of it should be removed */
@@ -111,26 +111,41 @@ object Main extends JFXApp3:
           } catch {
             case _: NumberFormatException => ("Invalid", 0.0) }
             val index = stockEntries.indexWhere(_._1 == stock)
+            val index2 = stockEntries2.indexWhere(_._1 == stock)
+            val indexes = for { i <- stockEntries2.indices
+              if stockEntries2(i)._1 == stock } yield i
             if (index != -1) then
               val (key, value) = stockEntries(index)
-              val newValue = value - holdings.toDouble
+              var newValue = value - holdings.toDouble
               if newValue == 0 then
                 stockEntries = stockEntries.filter((key, _) => key != stock)
-                if dateEntries.length > 1 then
+                stockEntries2 = stockEntries2.filter((key, _) => key != stock)
+                if dateEntries.length == 1 then
+                  dateEntries2 = ArrayBuffer.empty[String]
                   dateEntries.remove(index)
+                else if dateEntries.nonEmpty then
+                  dateEntries.remove(index)
+                  dateEntries2.remove(index2)
               else
                 stockEntries(index) = (key, newValue)
+                stockEntries2(index2) = (key, newValue)
             else
               println("Stock not found")
+          println("here I remove a stock")
+          println(stockEntries)
+          println(dateEntries)
+          println(stockEntries2)
+          println(dateEntries2)
     /** The visualisations will also be updated after the array has been updated */
           val stocksVisualize = stockEntries.toArray
-          val stocksPlot = Visuals.ColumnChart().makeMultiColumnChart(stocksVisualize, dateEntries.toArray)
+          val stocksVisualize2 = stockEntries2.toArray
+          val stocksPlot = Visuals.ColumnChart().makeMultiColumnChart(stocksVisualize2, dateEntries2.toArray)
           val pieChart = Visuals.Pie().makePie(stocksVisualize)
           val sumCard = Visuals.Card().makeSumCard(stocksVisualize)
-          val growthCard = Visuals.Card().makeGrowthCard(stocksVisualize, dateEntries.toArray)
-          val maxCard = Visuals.Card().makeMaxCard(stocksVisualize, dateEntries.toArray)
-          val minCard = Visuals.Card().makeMinCard(stocksVisualize, dateEntries.toArray)
-          val tableView = Visuals.CreateTable().tableView
+          val growthCard = Visuals.Card().makeGrowthCard(stocksVisualize2, dateEntries2.toArray)
+          val maxCard = Visuals.Card().makeMaxCard(stocksVisualize2, dateEntries2.toArray)
+          val minCard = Visuals.Card().makeMinCard(stocksVisualize2, dateEntries2.toArray)
+          val tableView = Visuals.CreateTable().createTable(stocksVisualize)
     /** finally we update the tab and remove the old one */
           if tab.tabs.exists(tab => tab.getText == "Tracker") then
             tab.getTabs.removeIf(tab => tab.getText == "Tracker")
@@ -139,6 +154,30 @@ object Main extends JFXApp3:
           else
             tab += makeTab(stock, tableView, pieChart, sumCard, growthCard, maxCard, minCard, stocksPlot)
             rootPane.center = tab
+
+          stocksPlot.getData.foreach( series=> {
+            series.getData.foreach( d => {
+              val pointNode: scalafx.scene.Node = d.getNode
+              val pointValue = d.getYValue.toString
+              val pointMonth = d.getXValue
+              val roundedValue = BigDecimal(pointValue).setScale(1, BigDecimal.RoundingMode.HALF_UP)
+              val tooltip = new Tooltip()
+              tooltip.setText(pointMonth + ": " + "$" + roundedValue.toString)
+              tooltip.setStyle("-fx-background-color: yellow; " + "-fx-text-fill: black; ")
+              Tooltip.install(pointNode, tooltip)
+            })})
+
+          val total = pieChart.getData.foldLeft(0.0) {(x, y) => x + y.getPieValue}
+
+          pieChart.getData.foreach( d => {
+            val sliceNode: scalafx.scene.Node = d.getNode
+            val pieValue = d.getPieValue
+            val percent = (pieValue / total) * 100
+            val msg = "%s: %.2f (%.2f%%)".format(d.getName, pieValue, percent)
+            val tt = new Tooltip()
+            tt.setText(msg)
+            tt.setStyle("-fx-background-color: yellow; " +  "-fx-text-fill: black; ")
+            Tooltip.install(sliceNode, tt) })
 
         case _ => println("Dialog cancelled") } }
 
@@ -180,21 +219,30 @@ object Main extends JFXApp3:
           }
           val validDateFormat = "\\d{4}-\\d{2}".r
           if validDateFormat.findFirstIn(purchaseDate).isDefined then
-            dateEntries += purchaseDate
+            dateEntries2 += purchaseDate
+            stockEntries2 += (stock -> holdings.toDouble)
             val existingStockIndex = stockEntries.indexWhere(_._1 == stock)
             if (existingStockIndex != -1) then
              stockEntries(existingStockIndex) = (stock -> (stockEntries(existingStockIndex)._2 + holdings.toDouble))
             else
              stockEntries += (stock -> holdings.toDouble)
+             dateEntries += purchaseDate
+           /** Debugging */
+          println(stockEntries)
+          println(dateEntries)
+          println(stockEntries2)
+          println(dateEntries2)
+
     /** The visualisations will also be updated after the array has been updated */
           val stocksVisualize = stockEntries.toArray
-          val stocksPlot = Visuals.ColumnChart().makeMultiColumnChart(stocksVisualize, dateEntries.toArray)
+          val stocksVisualize2 = stockEntries2.toArray
+          val stocksPlot = Visuals.ColumnChart().makeMultiColumnChart(stocksVisualize2, dateEntries2.toArray)
           val pieChart = Visuals.Pie().makePie(stocksVisualize)
           val sumCard = Visuals.Card().makeSumCard(stocksVisualize)
-          val growthCard = Visuals.Card().makeGrowthCard(stocksVisualize, dateEntries.toArray)
-          val maxCard = Visuals.Card().makeMaxCard(stocksVisualize, dateEntries.toArray)
-          val minCard = Visuals.Card().makeMinCard(stocksVisualize, dateEntries.toArray)
-          val tableView = Visuals.CreateTable().tableView
+          val growthCard = Visuals.Card().makeGrowthCard(stocksVisualize2, dateEntries2.toArray)
+          val maxCard = Visuals.Card().makeMaxCard(stocksVisualize2, dateEntries2.toArray)
+          val minCard = Visuals.Card().makeMinCard(stocksVisualize2, dateEntries2.toArray)
+          val tableView = Visuals.CreateTable().createTable(stocksVisualize)
     /** The tab gets an update and the old tab is removed. */
           if tab.tabs.exists(tab => tab.getText == "Tracker") then
             tab.getTabs.removeIf(tab => tab.getText == "Tracker")
@@ -270,16 +318,6 @@ object Main extends JFXApp3:
       makeTab.content = top
       makeTab
     }
-
-    createTable.onAction = (e: ActionEvent) => tab += makeTableTab()
-
-    def makeTableTab(): Tab = {
-      val tableView2 = Visuals.CreateTable().tableView
-      val makeTab = new Tab
-      makeTab.text = "Table"
-      makeTab.content = tableView2
-      makeTab
-      }
 
     /** In this section are all the action buttons for creating the different plot/chart types.
       * These charts can be created on a separate tab and show the all time progress of a single stock.

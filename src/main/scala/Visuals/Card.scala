@@ -38,7 +38,7 @@ class Card:
     label.setFont(font)
 
     val sumCard = new Rectangle
-    sumCard.width = 250
+    sumCard.width = 200
     sumCard.height = 150
     sumCard.fill = Color.LightGrey
 
@@ -57,15 +57,15 @@ class Card:
 
 
   def makeGrowthCard(stockList: Array[(String, Double)], purchaseDates: Array[String]) =
-    val priceData = Data.StockData().pricesFromMonthv3(stockList, purchaseDates)
-    val growthAmount = if stockList.nonEmpty then (priceData.last._2 - priceData.head._2) else 0
-    val roundedGrowth = BigDecimal(growthAmount).setScale(1, BigDecimal.RoundingMode.HALF_UP)
-    val sign: String = if growthAmount > 0 then
+
+    val priceData = Data.StockData().findGrowthValue(stockList, purchaseDates)
+    val roundedGrowth = BigDecimal(priceData).setScale(1, BigDecimal.RoundingMode.HALF_UP)
+    val sign: String = if priceData > 0 then
       "+"
     else " "
-    val boxColor = if growthAmount > 0 then
+    val boxColor = if priceData > 0 then
       Color.LightGreen
-    else if  growthAmount < 0 then
+    else if  priceData < 0 then
       Color.Red
     else
       Color.Yellow
@@ -77,7 +77,7 @@ class Card:
     label.setFont(font)
 
     val growthCard = new Rectangle
-    growthCard.width = 250
+    growthCard.width = 200
     growthCard.height = 150
     growthCard.fill = boxColor
 
@@ -107,7 +107,7 @@ class Card:
     label.setFont(font)
 
     val maxCard = new Rectangle
-    maxCard.width = 250
+    maxCard.width = 200
     maxCard.height = 150
     maxCard.fill = Color.LightSkyBlue
 
@@ -138,7 +138,7 @@ class Card:
     label.setFont(font)
 
     val minCard = new Rectangle
-    minCard.width = 250
+    minCard.width = 200
     minCard.height = 150
     minCard.fill = Color.LightSalmon
 

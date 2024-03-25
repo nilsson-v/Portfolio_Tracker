@@ -105,17 +105,6 @@ class StockData:
     val sorted = stocksToArray.sorted
     sorted
 
-  def pricesFromMonthv2(stockList: Array[(String, Double)], purchaseDates: Array[String]) =
-    var resultArray = ArrayBuffer[Array[(String, Double)]]()
-    val zipList = stockList.map((stock, multiplier) => (zipDatesAndPrices(stock), multiplier))
-    val multiplyStock = zipList.map((zipped, multiplier) => zipped.map((key, values) => (key, values * multiplier)))
-    val cutDates = { for i <- multiplyStock.indices do
-      resultArray += multiplyStock(i).dropWhile{ case (month, _) => month.take(7) < purchaseDates(i)} }
-    val mapArray = resultArray.flatten.groupBy(_._1)
-    val combinedStocks = mapArray.map((key, values) => (key, values.map(_._2).sum))
-    val stocksToArray = combinedStocks.toArray
-    stocksToArray.sorted
-
   def  pricesFromMonthv3(stockList: Array[(String, Double)], purchaseDates: Array[String]) =
     val zipList = stockList.zip(purchaseDates)
     val filteredStockData = zipList.map { case ((stock, multiplier), purchaseDate) =>
@@ -125,6 +114,21 @@ class StockData:
     }
     val combinedData = filteredStockData.flatten.groupBy(_._1).view.mapValues(_.map(_._2).sum)
     combinedData.toArray.sorted
+
+  def findGrowthValue(stockList: Array[(String, Double)], purchaseDates: Array[String]) =
+    val cuttedStocks = ArrayBuffer[Array[(String, Double)]]()
+    val priceDifferences = ArrayBuffer[Double]()
+    val multiplied = stockList.map( (stock, multiplier) => multiplyStocks(stock, multiplier))
+    val stockArray = for i <- multiplied.indices do
+      cuttedStocks += pricesFromMonth(multiplied(i), purchaseDates(i))
+    for i <- cuttedStocks.indices do
+      priceDifferences += cuttedStocks(i).lastOption.map(_._2).getOrElse(0.0) - cuttedStocks(i).headOption.map(_._2).getOrElse(0.0)
+    priceDifferences.sum
+
+
+
+
+
 
 
 

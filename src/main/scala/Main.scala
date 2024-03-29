@@ -1,21 +1,25 @@
 import Visuals.Table
-import scalafx.scene.control
-import scalafx.scene.control.Tooltip
+import scalafx.scene.{Node, Scene, SnapshotParameters, control}
+import scalafx.scene.control.{Alert, Button, Menu, MenuBar, MenuItem, ScrollPane, SelectionMode, Slider, SplitPane, Tab, TabPane, TableColumn, TableView, TextField, TextInputDialog, Tooltip, TreeView}
 import scalafx.application.JFXApp3
 import scalafx.event.ActionEvent
-import scalafx.scene.{Node, Scene}
-import scalafx.scene.control.{Button, Menu, MenuBar, MenuItem, ScrollPane, SelectionMode, Slider, SplitPane, Tab, TabPane, TableColumn, TableView, TextField, TextInputDialog, TreeView}
 import scalafx.scene.layout.{BorderPane, HBox, StackPane}
 import scalafx.stage.FileChooser
 import scalafx.stage.FileChooser.*
 import scalafx.Includes.*
 import scalafx.beans.property.{ReadOnlyStringWrapper, StringProperty}
+import scalafx.embed.swing.SwingFXUtils
 import scalafx.geometry.{Orientation, Pos}
 import scalafx.scene.chart.{BarChart, PieChart}
+import scalafx.scene.control.Alert.AlertType
+import scalafx.scene.image.WritableImage
 import scalafx.scene.paint.Color
 import scalafx.scene.shape.Rectangle
-import scala.jdk.CollectionConverters
+import scalafx.scene.text.Text
 
+import java.io.{BufferedReader, BufferedWriter, File, FileReader, FileWriter}
+import javax.imageio.ImageIO
+import scala.jdk.CollectionConverters
 import scala.collection.mutable.ArrayBuffer
 
 
@@ -67,15 +71,36 @@ object Main extends JFXApp3:
 
     rootPane.top = menuBar
 
+    /** This section is the most relevant for making the dashboard tab
+     * first we create a new TabPane */
+    val tab = new TabPane
+
     /** Menubar actions */
     openFile.onAction = (e: ActionEvent) => {
       val fileChooser = new FileChooser
       val selected = fileChooser.showOpenDialog(stage)
     }
 
-    /** This section is the most relevant for making the dashboard tab
-     * first we create a new TabPane */
-    val tab = new TabPane
+    exportFile.onAction = (e: ActionEvent) => {
+      val fileChooser = new FileChooser()
+      fileChooser.title = "Save Image"
+      fileChooser.extensionFilters.addAll(new ExtensionFilter("PNG Files", "*.png"))
+      val selectedFile = fileChooser.showSaveDialog(stage)
+      if (selectedFile != null) {
+        exportTabContentAsImage(tab, selectedFile.getAbsolutePath)
+      }
+    }
+
+    def exportTabContentAsImage(tabPane: TabPane, filePath: String): Unit = {
+      val image = new WritableImage(tabPane.width.value.toInt, tabPane.height.value.toInt)
+      val snapshotParameters = new SnapshotParameters()
+      snapshotParameters.setFill(Color.Transparent) // Adjust as needed
+
+      tabPane.snapshot(snapshotParameters, image)
+      val file = new File(filePath)
+      val imageFile = SwingFXUtils.fromFXImage(image, null)
+      ImageIO.write(imageFile, "png", file)
+    }
 
     /**stockEntries: ArrayBuffer that takes as parameters stock files and their multipliers
      *dateEntries: ArrayBuffer that saves the purchaseDates to create the graph with the correct timeline */
@@ -88,12 +113,14 @@ object Main extends JFXApp3:
      * When pressing the button an prompt will appear asking for what stock and how much of it should be removed */
     removeButton.onAction = (e: ActionEvent) => {
       val stockDialog = new TextInputDialog(defaultValue = "Default Value")
+      stockDialog.initOwner(stage)
       stockDialog.title = "Stock"
       stockDialog.headerText = "Enter stock"
       stockDialog.contentText = "Stock: "
       val stockResult = stockDialog.showAndWait()
 
       val amountDialog = new TextInputDialog(defaultValue = "Default Value")
+      amountDialog.initOwner(stage)
       amountDialog.title = "Amount"
       amountDialog.headerText = "Enter amount"
       amountDialog.contentText = "Amount: "
@@ -108,6 +135,22 @@ object Main extends JFXApp3:
           try {
             val stockValue = stock
             val holdingResult = holdings.toDouble
+            if !stockEntries.map(_._1).contains(stock) then
+              new Alert(AlertType.Error) {
+              initOwner(stage)
+              title = "Error Dialog"
+              headerText = "Input error."
+              contentText = "You don't own this stock!"
+            }.showAndWait()
+              throw new IllegalArgumentException("Stock does not exist")
+            if holdingResult < 0 then
+              new Alert(AlertType.Error) {
+              initOwner(stage)
+              title = "Error Dialog"
+              headerText = "Input error."
+              contentText = "Cannot remove negative value!"
+            }.showAndWait()
+              throw new IllegalArgumentException("Negative value")
           } catch {
             case _: NumberFormatException => ("Invalid", 0.0) }
 
@@ -208,18 +251,21 @@ object Main extends JFXApp3:
     //todo Error handling if stock is not in files!!
     addButton.onAction = (e: ActionEvent) => {
       val stockDialog = new TextInputDialog(defaultValue = "Default Value")
+      stockDialog.initOwner(stage)
       stockDialog.title = "Stock"
       stockDialog.headerText = "Enter stock"
       stockDialog.contentText = "Stock: "
       val stockResult = stockDialog.showAndWait()
 
       val amountDialog = new TextInputDialog(defaultValue = "Default Value")
+      amountDialog.initOwner(stage)
       amountDialog.title = "Amount"
       amountDialog.headerText = "Enter amount"
       amountDialog.contentText = "Amount: "
       val amountResult = amountDialog.showAndWait()
 
       val dateDialog = new TextInputDialog(defaultValue = "Default Value")
+      dateDialog.initOwner(stage)
       dateDialog.title = "Purchase Date"
       dateDialog.headerText = "Enter purchase date"
       dateDialog.contentText = "Purchase Date (YYYY-MM): "
@@ -236,6 +282,14 @@ object Main extends JFXApp3:
             val stockValue = stock
             val holdingResult = holdings.toDouble
             val date = purchaseDate
+            if holdingResult <= 0 then
+              new Alert(AlertType.Error) {
+              initOwner(stage)
+              title = "Error"
+              headerText = "Input error."
+              contentText = "Cannot input negative amount!"
+            }.showAndWait()
+              throw new IllegalArgumentException("Amount cannot be negative")
           } catch {
             case _: NumberFormatException => ("Invalid", 0.0, "Invalid")
           }

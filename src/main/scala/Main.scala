@@ -46,8 +46,7 @@ object Main extends JFXApp3:
     val fileMenu = new Menu("File")
     val importFile = new MenuItem("Import")
     val exportFile = new MenuItem("Export")
-    val openFile = new MenuItem("Open")
-    fileMenu.items = List(importFile, exportFile, openFile)
+    fileMenu.items = List(importFile, exportFile)
 
     val createMenu = new Menu("Create")
     val createLinePlot = new MenuItem("Line Plot")
@@ -75,39 +74,86 @@ object Main extends JFXApp3:
      * first we create a new TabPane */
     val tab = new TabPane
 
-    /** Menubar actions */
-    openFile.onAction = (e: ActionEvent) => {
-      val fileChooser = new FileChooser
-      val selected = fileChooser.showOpenDialog(stage)
-    }
-
-    exportFile.onAction = (e: ActionEvent) => {
-      val fileChooser = new FileChooser()
-      fileChooser.title = "Save Image"
-      fileChooser.extensionFilters.addAll(new ExtensionFilter("PNG Files", "*.png"))
-      val selectedFile = fileChooser.showSaveDialog(stage)
-      if (selectedFile != null) {
-        exportTabContentAsImage(tab, selectedFile.getAbsolutePath)
-      }
-    }
-
-    def exportTabContentAsImage(tabPane: TabPane, filePath: String): Unit = {
-      val image = new WritableImage(tabPane.width.value.toInt, tabPane.height.value.toInt)
-      val snapshotParameters = new SnapshotParameters()
-      snapshotParameters.setFill(Color.Transparent) // Adjust as needed
-
-      tabPane.snapshot(snapshotParameters, image)
-      val file = new File(filePath)
-      val imageFile = SwingFXUtils.fromFXImage(image, null)
-      ImageIO.write(imageFile, "png", file)
-    }
-
     /**stockEntries: ArrayBuffer that takes as parameters stock files and their multipliers
      *dateEntries: ArrayBuffer that saves the purchaseDates to create the graph with the correct timeline */
     var stockEntries: ArrayBuffer[(String, Double)] = ArrayBuffer()
     var stockEntries2: ArrayBuffer[(String, Double)] = ArrayBuffer()
     var dateEntries: ArrayBuffer[String] = ArrayBuffer()
     var dateEntries2: ArrayBuffer[String] = ArrayBuffer()
+
+    /** Exports the data to selected folder in CSV format using saveData function*/
+    exportFile.onAction = (e: ActionEvent) => {
+      val fileChooser = new FileChooser()
+      fileChooser.title = "Save data"
+      fileChooser.extensionFilters.addAll( new FileChooser.ExtensionFilter("CSV Files", "*.csv"),new FileChooser.ExtensionFilter("All Files", "*.*"))
+      val selectedFile = fileChooser.showSaveDialog(stage)
+      if selectedFile != null then
+        val filePath= selectedFile.getAbsolutePath
+        Data.DataReader().saveData(stockEntries, dateEntries,stockEntries2, dateEntries2, filePath)
+      else
+        println("No file selected.")
+
+    }
+   
+    /** Import a CSV file using loadData function.
+     * After loading the data the stock- and date entries are cleared and replaced with the imported data.
+     * After that the visuals are updated with the new values in the arrays.*/
+    importFile.onAction = (e: ActionEvent) => {
+      val fileChooser = new FileChooser()
+      fileChooser.title = "Import data"
+      fileChooser.extensionFilters.addAll(
+      new FileChooser.ExtensionFilter("CSV Files", "*.csv"), new FileChooser.ExtensionFilter("All Files", "*.*"))
+      val selectedFile = fileChooser.showOpenDialog(stage)
+      if selectedFile != null then
+        val filePath= selectedFile.getAbsolutePath
+        val (importStockEntries, importDateEntries, importStockEntries2, importDateEntries2) = Data.DataReader().loadData(filePath)
+        stockEntries.clear()
+        stockEntries ++= importStockEntries
+        dateEntries.clear()
+        dateEntries ++= importDateEntries
+        stockEntries2.clear()
+        stockEntries2 ++= importStockEntries2
+        dateEntries2.clear()
+        dateEntries2 ++= importDateEntries2
+
+        val stocksVisualize = stockEntries.toArray
+        val stocksVisualize2 = stockEntries2.toArray
+        val stocksPlot = Visuals.ColumnChart().makeMultiColumnChart(stocksVisualize2, dateEntries2.toArray)
+        val pieChart = Visuals.Pie().makePie(stocksVisualize)
+        val sumCard = Visuals.Card().makeSumCard(stocksVisualize)
+        val growthCard = Visuals.Card().makeGrowthCard(stocksVisualize2, dateEntries2.toArray)
+        val maxCard = Visuals.Card().makeMaxCard(stocksVisualize2, dateEntries2.toArray)
+        val minCard = Visuals.Card().makeMinCard(stocksVisualize2, dateEntries2.toArray)
+        val tableView = Visuals.CreateTable().createTable(stocksVisualize)
+
+        tab += makeTab(tableView, pieChart, sumCard, growthCard, maxCard, minCard, stocksPlot)
+        rootPane.center = tab
+
+        stocksPlot.getData.foreach( series=> {
+            series.getData.foreach( d => {
+              val pointNode: scalafx.scene.Node = d.getNode
+              val pointValue = d.getYValue.toString
+              val pointMonth = d.getXValue
+              val roundedValue = BigDecimal(pointValue).setScale(1, BigDecimal.RoundingMode.HALF_UP)
+              val tooltip = new Tooltip()
+              tooltip.setText(pointMonth + ": " + "$" + roundedValue.toString)
+              tooltip.setStyle("-fx-background-color: yellow; " + "-fx-text-fill: black; ")
+              Tooltip.install(pointNode, tooltip)
+            })})
+
+          val total = pieChart.getData.foldLeft(0.0) {(x, y) => x + y.getPieValue}
+
+          pieChart.getData.foreach( d => {
+            val sliceNode: scalafx.scene.Node = d.getNode
+            val pieValue = d.getPieValue
+            val percent = (pieValue / total) * 100
+            val msg = "%s: %.2f (%.2f%%)".format(d.getName, pieValue, percent)
+            val tt = new Tooltip()
+            tt.setText(msg)
+            tt.setStyle("-fx-background-color: yellow; " +  "-fx-text-fill: black; ")
+            Tooltip.install(sliceNode, tt) })
+
+    }
 
     /** The remove button: this button is responsible for removing stocks.
      * When pressing the button an prompt will appear asking for what stock and how much of it should be removed */
@@ -214,10 +260,10 @@ object Main extends JFXApp3:
     /** finally we update the tab and remove the old one */
           if tab.tabs.exists(tab => tab.getText == "Tracker") then
             tab.getTabs.removeIf(tab => tab.getText == "Tracker")
-            tab += makeTab(stock, tableView, pieChart, sumCard, growthCard, maxCard, minCard, stocksPlot)
+            tab += makeTab(tableView, pieChart, sumCard, growthCard, maxCard, minCard, stocksPlot)
             rootPane.center = tab
           else
-            tab += makeTab(stock, tableView, pieChart, sumCard, growthCard, maxCard, minCard, stocksPlot)
+            tab += makeTab(tableView, pieChart, sumCard, growthCard, maxCard, minCard, stocksPlot)
             rootPane.center = tab
 
           stocksPlot.getData.foreach( series=> {
@@ -323,10 +369,10 @@ object Main extends JFXApp3:
     /** The tab gets an update and the old tab is removed. */
           if tab.tabs.exists(tab => tab.getText == "Tracker") then
             tab.getTabs.removeIf(tab => tab.getText == "Tracker")
-            tab += makeTab(stock, tableView, pieChart, sumCard, growthCard, maxCard, minCard, stocksPlot)
+            tab += makeTab(tableView, pieChart, sumCard, growthCard, maxCard, minCard, stocksPlot)
             rootPane.center = tab
           else
-            tab += makeTab(stock, tableView, pieChart, sumCard, growthCard, maxCard, minCard, stocksPlot)
+            tab += makeTab(tableView, pieChart, sumCard, growthCard, maxCard, minCard, stocksPlot)
             rootPane.center = tab
 
           stocksPlot.getData.foreach( series=> {
@@ -358,9 +404,9 @@ object Main extends JFXApp3:
      }
 
     /** The function makeTab is responsible for creating the dashboard that visualizes all the data.
-      * It takes as parameters the stock, a tableView, a pieChart, the cards and a barchart.
+      * It takes as parameters a tableView, a pieChart, the cards and a barchart.
       * This paramaters represent visualisations and will be placed suitably on the dashboard. */
-    def makeTab(stock: String, tableView: TableView[Table], pieChart: PieChart, sumCard: Node, growthCard: Node, maxCard: Node, minCard: Node, stocksPlot: BarChart[String, Number]): Tab = {
+    def makeTab(tableView: TableView[Table], pieChart: PieChart, sumCard: Node, growthCard: Node, maxCard: Node, minCard: Node, stocksPlot: BarChart[String, Number]): Tab = {
       val tabTable = tableView
       val leftDown = new ScrollPane
       /** Left down tiles contains the table */

@@ -105,7 +105,7 @@ class StockData:
     val sorted = stocksToArray.sorted
     sorted
 
-  def  pricesFromMonthv3(stockList: Array[(String, Double)], purchaseDates: Array[String]) =
+  def pricesFromMonthv3(stockList: Array[(String, Double)], purchaseDates: Array[String]) =
     val zipList = stockList.zip(purchaseDates)
     val filteredStockData = zipList.map { case ((stock, multiplier), purchaseDate) =>
       val stockData = zipDatesAndPrices(stock)
@@ -124,13 +124,6 @@ class StockData:
     for i <- cuttedStocks.indices do
       priceDifferences += cuttedStocks(i).lastOption.map(_._2).getOrElse(0.0) - cuttedStocks(i).headOption.map(_._2).getOrElse(0.0)
     priceDifferences.sum
-
-
-
-
-
-
-
 
   //replace jsonString with this Data.DataReader().getAPI(fileName)
 

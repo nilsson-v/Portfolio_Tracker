@@ -6,11 +6,11 @@ import scalafx.scene.control.Label
 import scalafx.scene.layout.VBox
 import scalafx.scene.paint.Color
 import scalafx.scene.shape.Rectangle
-import scalafx.scene.text.{Font, FontWeight, Text}
+import scalafx.scene.text.{Font, FontWeight, Text, TextAlignment}
 
 class Card:
 
-  val font = Font.font("Arial", FontWeight.Bold, 20)
+  val font = Font.font("Arial", FontWeight.Bold, 25)
 
   def sum(numbers: Array[Double]) =
     var count = 0.0
@@ -33,7 +33,8 @@ class Card:
 
     val cardContent = new VBox
     val label = new Label("Total holdings")
-    cardContent.setAlignment(Pos.Center)
+    cardContent.alignmentInParent = Pos.Center
+    label.alignmentInParent = Pos.Center
     label.setTextFill(Color.Black)
     label.setFont(font)
 

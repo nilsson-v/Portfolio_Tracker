@@ -10,7 +10,7 @@ import scalafx.Includes.*
 import scalafx.beans.property.{ReadOnlyStringWrapper, StringProperty}
 import scalafx.embed.swing.SwingFXUtils
 import scalafx.geometry.{Orientation, Pos}
-import scalafx.scene.chart.{BarChart, PieChart}
+import scalafx.scene.chart.{BarChart, Chart, PieChart, XYChart}
 import scalafx.scene.control.Alert.AlertType
 import scalafx.scene.image.WritableImage
 import scalafx.scene.paint.Color
@@ -48,11 +48,11 @@ object Main extends JFXApp3:
     val exportFile = new MenuItem("Export")
     fileMenu.items = List(importFile, exportFile)
 
-    val createMenu = new Menu("Create")
+    val inspectMenu = new Menu("Inspect Stock")
     val createLinePlot = new MenuItem("Line Plot")
     val createColumnPlot = new MenuItem("Column Plot")
     val createScatterPlot = new MenuItem("Scatter Plot")
-    createMenu.items = List(createLinePlot, createColumnPlot, createScatterPlot)
+    inspectMenu.items = List(createLinePlot, createColumnPlot, createScatterPlot)
 
     val controlMenu = new Menu("Control Panel")
     val hideTable = new MenuItem("Hide Table")
@@ -66,10 +66,38 @@ object Main extends JFXApp3:
     val scatterType = new MenuItem("Scatter Plot")
     chartMenu.items = List(columnType, lineType, scatterType)
 
-    menuBar.menus = List(fileMenu, createMenu, controlMenu, chartMenu)
+    menuBar.menus = List(fileMenu, controlMenu, chartMenu, inspectMenu)
 
     rootPane.top = menuBar
 
+    def tooltipsHovering[T <: Chart](stocksPlot: T, pieChart: PieChart) = {
+      stocksPlot match
+         case xyChart: XYChart[_, _] => {
+          xyChart.getData.foreach( series=> {
+          series.getData.foreach( d => {
+            val pointNode: scalafx.scene.Node = d.getNode
+            val pointValue = d.getYValue.toString
+            val pointMonth = d.getXValue.toString
+            val roundedValue = BigDecimal(pointValue).setScale(1, BigDecimal.RoundingMode.HALF_UP)
+            val tooltip = new Tooltip()
+            tooltip.setText(pointMonth + ": " + "$" + roundedValue.toString)
+            tooltip.setStyle("-fx-background-color: yellow; " + "-fx-text-fill: black; ")
+            Tooltip.install(pointNode, tooltip)
+          })})
+
+          val total = pieChart.getData.foldLeft(0.0) {(x, y) => x + y.getPieValue}
+
+          pieChart.getData.foreach( d => {
+            val sliceNode: scalafx.scene.Node = d.getNode
+            val pieValue = d.getPieValue
+            val percent = (pieValue / total) * 100
+            val msg = "%s: %.2f (%.2f%%)".format(d.getName, pieValue, percent)
+            val tt = new Tooltip()
+            tt.setText(msg)
+            tt.setStyle("-fx-background-color: yellow; " +  "-fx-text-fill: black; ")
+            Tooltip.install(sliceNode, tt) })
+        }
+    }
     /** This section is the most relevant for making the dashboard tab
      * first we create a new TabPane */
     val tab = new TabPane
@@ -129,30 +157,62 @@ object Main extends JFXApp3:
         tab += makeTab(tableView, pieChart, sumCard, growthCard, maxCard, minCard, stocksPlot)
         rootPane.center = tab
 
-        stocksPlot.getData.foreach( series=> {
-            series.getData.foreach( d => {
-              val pointNode: scalafx.scene.Node = d.getNode
-              val pointValue = d.getYValue.toString
-              val pointMonth = d.getXValue
-              val roundedValue = BigDecimal(pointValue).setScale(1, BigDecimal.RoundingMode.HALF_UP)
-              val tooltip = new Tooltip()
-              tooltip.setText(pointMonth + ": " + "$" + roundedValue.toString)
-              tooltip.setStyle("-fx-background-color: yellow; " + "-fx-text-fill: black; ")
-              Tooltip.install(pointNode, tooltip)
-            })})
+        tooltipsHovering(stocksPlot, pieChart)
 
-          val total = pieChart.getData.foldLeft(0.0) {(x, y) => x + y.getPieValue}
+    }
 
-          pieChart.getData.foreach( d => {
-            val sliceNode: scalafx.scene.Node = d.getNode
-            val pieValue = d.getPieValue
-            val percent = (pieValue / total) * 100
-            val msg = "%s: %.2f (%.2f%%)".format(d.getName, pieValue, percent)
-            val tt = new Tooltip()
-            tt.setText(msg)
-            tt.setStyle("-fx-background-color: yellow; " +  "-fx-text-fill: black; ")
-            Tooltip.install(sliceNode, tt) })
+    lineType.onAction = (e: ActionEvent) => {
+        val stocksVisualize = stockEntries.toArray
+        val stocksVisualize2 = stockEntries2.toArray
+        val stocksPlot = Visuals.LinePlot().makeMultiLineChart(stocksVisualize2, dateEntries2.toArray)
+        val pieChart = Visuals.Pie().makePie(stocksVisualize)
+        val sumCard = Visuals.Card().makeSumCard(stocksVisualize)
+        val growthCard = Visuals.Card().makeGrowthCard(stocksVisualize2, dateEntries2.toArray)
+        val maxCard = Visuals.Card().makeMaxCard(stocksVisualize2, dateEntries2.toArray)
+        val minCard = Visuals.Card().makeMinCard(stocksVisualize2, dateEntries2.toArray)
+        val tableView = Visuals.CreateTable().createTable(stocksVisualize)
 
+        tab.getTabs.removeIf(tab => tab.getText == "Tracker")
+        tab += makeTab(tableView, pieChart, sumCard, growthCard, maxCard, minCard, stocksPlot)
+        rootPane.center = tab
+
+        tooltipsHovering(stocksPlot, pieChart)
+    }
+
+     scatterType.onAction = (e: ActionEvent) => {
+          val stocksVisualize = stockEntries.toArray
+          val stocksVisualize2 = stockEntries2.toArray
+          val stocksPlot = Visuals.ScatterPlot().makeMultiScatterPlot(stocksVisualize2, dateEntries2.toArray)
+          val pieChart = Visuals.Pie().makePie(stocksVisualize)
+          val sumCard = Visuals.Card().makeSumCard(stocksVisualize)
+          val growthCard = Visuals.Card().makeGrowthCard(stocksVisualize2, dateEntries2.toArray)
+          val maxCard = Visuals.Card().makeMaxCard(stocksVisualize2, dateEntries2.toArray)
+          val minCard = Visuals.Card().makeMinCard(stocksVisualize2, dateEntries2.toArray)
+          val tableView = Visuals.CreateTable().createTable(stocksVisualize)
+
+          tab.getTabs.removeIf(tab => tab.getText == "Tracker")
+          tab += makeTab(tableView, pieChart, sumCard, growthCard, maxCard, minCard, stocksPlot)
+          rootPane.center = tab
+
+          tooltipsHovering(stocksPlot, pieChart)
+     }
+
+      columnType.onAction = (e: ActionEvent) => {
+          val stocksVisualize = stockEntries.toArray
+          val stocksVisualize2 = stockEntries2.toArray
+          val stocksPlot = Visuals.ColumnChart().makeMultiColumnChart(stocksVisualize2, dateEntries2.toArray)
+          val pieChart = Visuals.Pie().makePie(stocksVisualize)
+          val sumCard = Visuals.Card().makeSumCard(stocksVisualize)
+          val growthCard = Visuals.Card().makeGrowthCard(stocksVisualize2, dateEntries2.toArray)
+          val maxCard = Visuals.Card().makeMaxCard(stocksVisualize2, dateEntries2.toArray)
+          val minCard = Visuals.Card().makeMinCard(stocksVisualize2, dateEntries2.toArray)
+          val tableView = Visuals.CreateTable().createTable(stocksVisualize)
+
+          tab.getTabs.removeIf(tab => tab.getText == "Tracker")
+          tab += makeTab(tableView, pieChart, sumCard, growthCard, maxCard, minCard, stocksPlot)
+          rootPane.center = tab
+
+          tooltipsHovering(stocksPlot, pieChart)
     }
 
     /** The remove button: this button is responsible for removing stocks.
@@ -240,13 +300,8 @@ object Main extends JFXApp3:
                  else if dateEntries.nonEmpty then
                    dateEntries.remove(index)
 
-
             else println("Stock not found")
-          println("here I remove a stock")
-          println(stockEntries)
-          println(dateEntries)
-          println(stockEntries2)
-          println(dateEntries2)
+
     /** The visualisations will also be updated after the array has been updated */
           val stocksVisualize = stockEntries.toArray
           val stocksVisualize2 = stockEntries2.toArray
@@ -266,29 +321,7 @@ object Main extends JFXApp3:
             tab += makeTab(tableView, pieChart, sumCard, growthCard, maxCard, minCard, stocksPlot)
             rootPane.center = tab
 
-          stocksPlot.getData.foreach( series=> {
-            series.getData.foreach( d => {
-              val pointNode: scalafx.scene.Node = d.getNode
-              val pointValue = d.getYValue.toString
-              val pointMonth = d.getXValue
-              val roundedValue = BigDecimal(pointValue).setScale(1, BigDecimal.RoundingMode.HALF_UP)
-              val tooltip = new Tooltip()
-              tooltip.setText(pointMonth + ": " + "$" + roundedValue.toString)
-              tooltip.setStyle("-fx-background-color: yellow; " + "-fx-text-fill: black; ")
-              Tooltip.install(pointNode, tooltip)
-            })})
-
-          val total = pieChart.getData.foldLeft(0.0) {(x, y) => x + y.getPieValue}
-
-          pieChart.getData.foreach( d => {
-            val sliceNode: scalafx.scene.Node = d.getNode
-            val pieValue = d.getPieValue
-            val percent = (pieValue / total) * 100
-            val msg = "%s: %.2f (%.2f%%)".format(d.getName, pieValue, percent)
-            val tt = new Tooltip()
-            tt.setText(msg)
-            tt.setStyle("-fx-background-color: yellow; " +  "-fx-text-fill: black; ")
-            Tooltip.install(sliceNode, tt) })
+          tooltipsHovering(stocksPlot, pieChart)
 
         case _ => println("Dialog cancelled") } }
 
@@ -375,29 +408,7 @@ object Main extends JFXApp3:
             tab += makeTab(tableView, pieChart, sumCard, growthCard, maxCard, minCard, stocksPlot)
             rootPane.center = tab
 
-          stocksPlot.getData.foreach( series=> {
-            series.getData.foreach( d => {
-              val pointNode: scalafx.scene.Node = d.getNode
-              val pointValue = d.getYValue.toString
-              val pointMonth = d.getXValue
-              val roundedValue = BigDecimal(pointValue).setScale(1, BigDecimal.RoundingMode.HALF_UP)
-              val tooltip = new Tooltip()
-              tooltip.setText(pointMonth + ": " + "$" + roundedValue.toString)
-              tooltip.setStyle("-fx-background-color: yellow; " + "-fx-text-fill: black; ")
-              Tooltip.install(pointNode, tooltip)
-            })})
-
-          val total = pieChart.getData.foldLeft(0.0) {(x, y) => x + y.getPieValue}
-
-          pieChart.getData.foreach( d => {
-            val sliceNode: scalafx.scene.Node = d.getNode
-            val pieValue = d.getPieValue
-            val percent = (pieValue / total) * 100
-            val msg = "%s: %.2f (%.2f%%)".format(d.getName, pieValue, percent)
-            val tt = new Tooltip()
-            tt.setText(msg)
-            tt.setStyle("-fx-background-color: yellow; " +  "-fx-text-fill: black; ")
-            Tooltip.install(sliceNode, tt) })
+          tooltipsHovering(stocksPlot, pieChart)
 
         case _ => println("Dialog cancelled")
         }
@@ -406,7 +417,7 @@ object Main extends JFXApp3:
     /** The function makeTab is responsible for creating the dashboard that visualizes all the data.
       * It takes as parameters a tableView, a pieChart, the cards and a barchart.
       * This paramaters represent visualisations and will be placed suitably on the dashboard. */
-    def makeTab(tableView: TableView[Table], pieChart: PieChart, sumCard: Node, growthCard: Node, maxCard: Node, minCard: Node, stocksPlot: BarChart[String, Number]): Tab = {
+    def makeTab[T <: Chart](tableView: TableView[Table], pieChart: PieChart, sumCard: Node, growthCard: Node, maxCard: Node, minCard: Node, stocksPlot: T): Tab = {
       val tabTable = tableView
       val leftDown = new ScrollPane
       /** Left down tiles contains the table */
@@ -448,6 +459,7 @@ object Main extends JFXApp3:
     /** The columnn plot **/
     createColumnPlot.onAction = (e: ActionEvent) => {
       val text = new TextInputDialog(defaultValue = "Default Value")
+      text.initOwner(stage)
       text.title = "Stock"
       text.headerText = "Input file: "
       text.contentText = "File: "
@@ -455,11 +467,11 @@ object Main extends JFXApp3:
       result match {
         case Some(fileName) => tab += makeColumnPlot(fileName)
         case _ => None
-      }
-    }
+    }}
     /** The line plot */
     createLinePlot.onAction = (e: ActionEvent) => {
       val text = new TextInputDialog(defaultValue = "Default Value")
+      text.initOwner(stage)
       text.title = "Stock"
       text.headerText = "Input file: "
       text.contentText = "File: "
@@ -472,19 +484,21 @@ object Main extends JFXApp3:
     /** The scatter plot */
     createScatterPlot.onAction = (e: ActionEvent) => {
       val text = new TextInputDialog(defaultValue = "Default Value")
+      text.initOwner(stage)
       text.title = "Stock"
       text.headerText = "Input file: "
       text.contentText = "File: "
       val result = text.showAndWait()
       result match {
-        case Some(fileName) => tab += makeScatterPlot(fileName)
+        case Some(fileName) => { tab += makeScatterPlot(fileName)
+         rootPane.center = tab}
         case _ => None
       }
     }
 
     /** In this section are the corresponding functions that create the plots on the action events above */
     /** The column plot */
-    def makeColumnPlot(fileName: String): Tab = {
+    def makeColumnPlot(fileName: String) = {
       val columnPlot = Visuals.ColumnChart().makeColumnChart(fileName)
       val makeTab = new Tab
       makeTab.text = "Column Chart"

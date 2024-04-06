@@ -5,12 +5,13 @@ import scalafx.scene.chart.{CategoryAxis, LineChart, NumberAxis, ScatterChart, X
 class ScatterPlot: 
 
   
-  def makeScatterPlot(fileName: String) =
+  def makeScatterPlot(fileName: String, purchaseDate: String) =
     val priceData = Data.StockData().zipDatesAndPrices(fileName)
+    val priceDataM = Data.StockData().pricesFromMonth(priceData, purchaseDate)
 
     val chartData = new XYChart.Series[String, Number]
     chartData.setName("Monthly Prices")
-    chartData.data = priceData.map(pd => XYChart.Data[String, Number](pd._1, pd._2))
+    chartData.data = priceDataM.map(pd => XYChart.Data[String, Number](pd._1, pd._2))
 
     val xAxis = CategoryAxis()
     val yAxis = NumberAxis()

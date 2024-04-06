@@ -54,19 +54,21 @@ object Main extends JFXApp3:
     val createScatterPlot = new MenuItem("Scatter Plot")
     inspectMenu.items = List(createLinePlot, createColumnPlot, createScatterPlot)
 
-    val controlMenu = new Menu("Control Panel")
-    val hideTable = new MenuItem("Hide Table")
+    val dashboardMenu = new Menu("Dashboard")
     val addButton = new MenuItem("Add stock")
     val removeButton = new MenuItem("Remove stock")
-    controlMenu.items = List(addButton, removeButton)
+    dashboardMenu.items = List(addButton, removeButton)
 
-    val chartMenu = new Menu("Chart type")
+    val controlMenu = new Menu("Control Panel (Dashboard)")
+    val hideCards = new MenuItem("Hide Cards")
+    val showCards = new MenuItem("Show Cards")
     val lineType = new MenuItem("Line Plot")
     val columnType = new MenuItem("Column Plot")
     val scatterType = new MenuItem("Scatter Plot")
-    chartMenu.items = List(columnType, lineType, scatterType)
+    controlMenu.items = List(lineType, columnType, scatterType, hideCards, showCards)
+    controlMenu.setVisible(false)
 
-    menuBar.menus = List(fileMenu, controlMenu, chartMenu, inspectMenu)
+    menuBar.menus = List(fileMenu, dashboardMenu, inspectMenu, controlMenu)
 
     rootPane.top = menuBar
 
@@ -98,6 +100,23 @@ object Main extends JFXApp3:
             Tooltip.install(sliceNode, tt) })
         }
     }
+
+    def plotHovering[T <: Chart](stocksPlot: T) = {
+      stocksPlot match
+         case xyChart: XYChart[_, _] => {
+          xyChart.getData.foreach( series=> {
+          series.getData.foreach( d => {
+            val pointNode: scalafx.scene.Node = d.getNode
+            val pointValue = d.getYValue.toString
+            val pointMonth = d.getXValue.toString
+            val roundedValue = BigDecimal(pointValue).setScale(1, BigDecimal.RoundingMode.HALF_UP)
+            val tooltip = new Tooltip()
+            tooltip.setText(pointMonth + ": " + "$" + roundedValue.toString)
+            tooltip.setStyle("-fx-background-color: yellow; " + "-fx-text-fill: black; ")
+            Tooltip.install(pointNode, tooltip)
+          })})
+      }
+    }
     /** This section is the most relevant for making the dashboard tab
      * first we create a new TabPane */
     val tab = new TabPane
@@ -122,7 +141,6 @@ object Main extends JFXApp3:
         println("No file selected.")
 
     }
-   
     /** Import a CSV file using loadData function.
      * After loading the data the stock- and date entries are cleared and replaced with the imported data.
      * After that the visuals are updated with the new values in the arrays.*/
@@ -214,6 +232,51 @@ object Main extends JFXApp3:
 
           tooltipsHovering(stocksPlot, pieChart)
     }
+
+      hideCards.onAction = (e: ActionEvent) => {
+          val stocksVisualize = stockEntries.toArray
+          val stocksVisualize2 = stockEntries2.toArray
+          val stocksPlot = Visuals.ColumnChart().makeMultiColumnChart(stocksVisualize2, dateEntries2.toArray)
+          val pieChart = Visuals.Pie().makePie(stocksVisualize)
+          val sumCard = Visuals.Card().makeSumCard(stocksVisualize)
+          sumCard.setVisible(false)
+          val growthCard = Visuals.Card().makeGrowthCard(stocksVisualize2, dateEntries2.toArray)
+          growthCard.setVisible(false)
+          val maxCard = Visuals.Card().makeMaxCard(stocksVisualize2, dateEntries2.toArray)
+          maxCard.setVisible(false)
+          val minCard = Visuals.Card().makeMinCard(stocksVisualize2, dateEntries2.toArray)
+          minCard.setVisible(false)
+          val tableView = Visuals.CreateTable().createTable(stocksVisualize)
+
+          tab.getTabs.removeIf(tab => tab.getText == "Tracker")
+          tab += makeTab(tableView, pieChart, sumCard, growthCard, maxCard, minCard, stocksPlot)
+          rootPane.center = tab
+
+          tooltipsHovering(stocksPlot, pieChart)
+      }
+
+       showCards.onAction = (e: ActionEvent) => {
+          val stocksVisualize = stockEntries.toArray
+          val stocksVisualize2 = stockEntries2.toArray
+          val stocksPlot = Visuals.ColumnChart().makeMultiColumnChart(stocksVisualize2, dateEntries2.toArray)
+          val pieChart = Visuals.Pie().makePie(stocksVisualize)
+          val sumCard = Visuals.Card().makeSumCard(stocksVisualize)
+          sumCard.setVisible(true)
+          val growthCard = Visuals.Card().makeGrowthCard(stocksVisualize2, dateEntries2.toArray)
+          growthCard.setVisible(true)
+          val maxCard = Visuals.Card().makeMaxCard(stocksVisualize2, dateEntries2.toArray)
+          maxCard.setVisible(true)
+          val minCard = Visuals.Card().makeMinCard(stocksVisualize2, dateEntries2.toArray)
+          minCard.setVisible(true)
+          val tableView = Visuals.CreateTable().createTable(stocksVisualize)
+
+          tab.getTabs.removeIf(tab => tab.getText == "Tracker")
+          tab += makeTab(tableView, pieChart, sumCard, growthCard, maxCard, minCard, stocksPlot)
+          rootPane.center = tab
+
+          tooltipsHovering(stocksPlot, pieChart)
+      }
+
 
     /** The remove button: this button is responsible for removing stocks.
      * When pressing the button an prompt will appear asking for what stock and how much of it should be removed */
@@ -382,12 +445,6 @@ object Main extends JFXApp3:
             else
              stockEntries += (stock -> holdings.toDouble)
              dateEntries += purchaseDate
-           /** Debugging */
-          println("here I add a stock")
-          println(stockEntries)
-          println(dateEntries)
-          println(stockEntries2)
-          println(dateEntries2)
 
     /** The visualisations will also be updated after the array has been updated */
           val stocksVisualize = stockEntries.toArray
@@ -409,6 +466,7 @@ object Main extends JFXApp3:
             rootPane.center = tab
 
           tooltipsHovering(stocksPlot, pieChart)
+          controlMenu.setVisible(true)
 
         case _ => println("Dialog cancelled")
         }
@@ -463,11 +521,25 @@ object Main extends JFXApp3:
       text.title = "Stock"
       text.headerText = "Input file: "
       text.contentText = "File: "
-      val result = text.showAndWait()
-      result match {
-        case Some(fileName) => tab += makeColumnPlot(fileName)
+      val priceResult = text.showAndWait()
+
+      val dateDialog = new TextInputDialog(defaultValue = "Default Value")
+      dateDialog.initOwner(stage)
+      dateDialog.title = "Start date"
+      dateDialog.headerText = "Enter date"
+      dateDialog.contentText = "Date (YYYY-MM): "
+      val dateResult = dateDialog.showAndWait()
+
+      (priceResult, dateResult) match {
+        case (Some(fileName), Some(date)) => {
+          val validDateFormat = "\\d{4}-\\d{2}".r
+          if validDateFormat.findFirstIn(date).isDefined then
+           tab += makeColumnPlot(fileName, date)
+           rootPane.center = tab }
         case _ => None
-    }}
+    }
+    }
+
     /** The line plot */
     createLinePlot.onAction = (e: ActionEvent) => {
       val text = new TextInputDialog(defaultValue = "Default Value")
@@ -475,12 +547,25 @@ object Main extends JFXApp3:
       text.title = "Stock"
       text.headerText = "Input file: "
       text.contentText = "File: "
-      val result = text.showAndWait()
-      result match {
-        case Some(fileName) => tab += makeLinePlot(fileName)
+      val priceResult = text.showAndWait()
+
+      val dateDialog = new TextInputDialog(defaultValue = "Default Value")
+      dateDialog.initOwner(stage)
+      dateDialog.title = "Start date"
+      dateDialog.headerText = "Enter date"
+      dateDialog.contentText = "Date (YYYY-MM): "
+      val dateResult = dateDialog.showAndWait()
+
+      (priceResult, dateResult) match {
+        case (Some(fileName), Some(date)) => {
+          val validDateFormat = "\\d{4}-\\d{2}".r
+          if validDateFormat.findFirstIn(date).isDefined then
+           tab += makeLinePlot(fileName, date)
+           rootPane.center = tab }
         case _ => None
        }
-     }
+    }
+
     /** The scatter plot */
     createScatterPlot.onAction = (e: ActionEvent) => {
       val text = new TextInputDialog(defaultValue = "Default Value")
@@ -488,34 +573,47 @@ object Main extends JFXApp3:
       text.title = "Stock"
       text.headerText = "Input file: "
       text.contentText = "File: "
-      val result = text.showAndWait()
-      result match {
-        case Some(fileName) => { tab += makeScatterPlot(fileName)
-         rootPane.center = tab}
-        case _ => None
-      }
-    }
+      val priceResult = text.showAndWait()
 
+      val dateDialog = new TextInputDialog(defaultValue = "Default Value")
+      dateDialog.initOwner(stage)
+      dateDialog.title = "Start date"
+      dateDialog.headerText = "Enter date"
+      dateDialog.contentText = "Date (YYYY-MM): "
+      val dateResult = dateDialog.showAndWait()
+
+      (priceResult, dateResult) match {
+        case (Some(fileName), Some(date)) => {
+          val validDateFormat = "\\d{4}-\\d{2}".r
+          if validDateFormat.findFirstIn(date).isDefined then
+           tab += makeScatterPlot(fileName, date)
+           rootPane.center = tab }
+        case _ => None
+    }
+  }
     /** In this section are the corresponding functions that create the plots on the action events above */
     /** The column plot */
-    def makeColumnPlot(fileName: String) = {
-      val columnPlot = Visuals.ColumnChart().makeColumnChart(fileName)
+    def makeColumnPlot(fileName: String, date: String) = {
+      val columnPlot = Visuals.ColumnChart().makeColumnChart(fileName, date)
+      plotHovering(columnPlot)
       val makeTab = new Tab
       makeTab.text = "Column Chart"
       makeTab.content = columnPlot
       makeTab
     }
     /** The line plot */
-     def makeLinePlot(fileName: String): Tab = {
-      val linePlot = Visuals.LinePlot().makeLinePlot(fileName)
+     def makeLinePlot(fileName: String, date: String): Tab = {
+      val linePlot = Visuals.LinePlot().makeLinePlot(fileName, date)
+      plotHovering(linePlot)
       val makeTab = new Tab
       makeTab.text = "Line Chart"
       makeTab.content = linePlot
       makeTab
     }
     /** The scatter plot */
-    def makeScatterPlot(fileName: String): Tab = {
-      val scatterPlot = Visuals.ScatterPlot().makeScatterPlot(fileName)
+    def makeScatterPlot(fileName: String, date: String): Tab = {
+      val scatterPlot = Visuals.ScatterPlot().makeScatterPlot(fileName, date)
+      plotHovering(scatterPlot)
       val makeTab = new Tab
       makeTab.text = "Scatter Chart"
       makeTab.content = scatterPlot

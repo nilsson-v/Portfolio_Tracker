@@ -6,12 +6,13 @@ import scalafx.scene.chart.{BarChart, CategoryAxis, LineChart, NumberAxis, XYCha
 
 class LinePlot:
 
-  def makeLinePlot(fileName: String) =
+  def makeLinePlot(fileName: String, purchaseDate: String) =
     val priceData = Data.StockData().zipDatesAndPrices(fileName)
+    val priceDataM = Data.StockData().pricesFromMonth(priceData, purchaseDate)
     
     val chartData = new XYChart.Series[String, Number]
     chartData.setName("Monthly Prices")
-    chartData.data = priceData.map(pd => XYChart.Data[String, Number](pd._1, pd._2))
+    chartData.data = priceDataM.map(pd => XYChart.Data[String, Number](pd._1, pd._2))
 
     val xAxis = CategoryAxis()
     val yAxis = NumberAxis()

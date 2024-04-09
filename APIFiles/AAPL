@@ -2,17 +2,26 @@
     "Meta Data": {
         "1. Information": "Monthly Adjusted Prices and Volumes",
         "2. Symbol": "AAPL",
-        "3. Last Refreshed": "2024-03-06",
+        "3. Last Refreshed": "2024-04-05",
         "4. Time Zone": "US/Eastern"
     },
-    "Monthly Adjusted Time Series":  {
-        "2024-03-14": {
+    "Monthly Adjusted Time Series": {
+        "2024-04-05": {
+            "1. open": "171.1900",
+            "2. high": "171.9200",
+            "3. low": "168.2302",
+            "4. close": "168.4500",
+            "5. adjusted close": "168.4500",
+            "6. volume": "270905315",
+            "7. dividend amount": "0.0000"
+        },
+        "2024-03-28": {
             "1. open": "179.5500",
             "2. high": "180.5300",
-            "3. low": "168.6800",
-            "4. close": "169.1200",
-            "5. adjusted close": "169.1200",
-            "6. volume": "318793245",
+            "3. low": "168.4900",
+            "4. close": "171.4800",
+            "5. adjusted close": "171.4800",
+            "6. volume": "1430780147",
             "7. dividend amount": "0.0000"
         },
         "2024-02-29": {

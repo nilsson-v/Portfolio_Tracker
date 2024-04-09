@@ -5,23 +5,27 @@ import org.json4s.jackson.{Json, parseJson}
 import io.StdIn.*
 import sys.process.*
 import java.net.URL
-import java.io.{BufferedInputStream, BufferedWriter, BufferedReader, File, FileOutputStream, FileWriter, FileReader}
+import java.io.{BufferedInputStream, BufferedReader, BufferedWriter, File, FileOutputStream, FileReader, FileWriter}
 import scala.io.Source
 import scala.util.Using
 import requests.*
 
 import scala.collection.mutable.ArrayBuffer
+import scala.concurrent.Future
 
 
 class DataReader:
-
+  
+  /** INSERT API Key here*/
+  val APIKey = "SZPPN9IYEA485BC9"
+  
   val folderPath = os.Path("/APIFiles")
 
-  def fetchAPIfromURL(ticker: String, fileName: String) =
-    val url = "https://www.alphavantage.co/query?function=TIME_SERIES_MONTHLY_ADJUSTED&symbol=" + ticker + "&apikey=SZPPN9IYEA485BC9&datatype=json"
+  def fetchAPIfromURL(ticker: String) = 
+    val url = "https://www.alphavantage.co/query?function=TIME_SERIES_MONTHLY_ADJUSTED&symbol=" + ticker + "&apikey=" + APIKey + "&datatype=json"
     val connection = new URL(url).openConnection()
     val in = new BufferedInputStream(connection.getInputStream)
-    val out = new FileOutputStream(fileName)
+    val out = new FileOutputStream(ticker)
     try {
       val buffer = new Array[Byte](1024)
       var bytesRead = in.read(buffer)
@@ -33,18 +37,18 @@ class DataReader:
       in.close()
       out.close()
     }
+  
 
   def getAPI(ticker: String) =
-
-    val url = new URL("https://www.alphavantage.co/query?function=TIME_SERIES_MONTHLY_ADJUSTED&symbol=" + ticker + "&apikey=SZPPN9IYEA485BC9&datatype=json")
+    val url = new URL("https://www.alphavantage.co/query?function=TIME_SERIES_MONTHLY_ADJUSTED&symbol=" + ticker + "&apikey=" + APIKey + "&datatype=json")
     val jsonString = Source.fromInputStream(url.openStream()).mkString
     jsonString
 
   def fetchAPI(ticker: String, fileName: String) =
-   val url = "https://www.alphavantage.co/query?function=TIME_SERIES_MONTHLY_ADJUSTED&symbol=" + ticker + "&apikey=SZPPN9IYEA485BC9&datatype=json"
-   //val jsonString = Source.fromURL(url).mkString
-   //val parsed = parseJson(jsonString)
-   //os.makeDir.all(folderPath)
+   val url = "https://www.alphavantage.co/query?function=TIME_SERIES_MONTHLY_ADJUSTED&symbol=" + ticker + "&apikey=" + APIKey + "&datatype=json"
+   val jsonString = Source.fromURL(url).mkString
+   val parsed = parseJson(jsonString)
+   os.makeDir.all(folderPath)
 
    Using(scala.io.Source.fromURL(url)) { source =>
      val fileContent = source.mkString

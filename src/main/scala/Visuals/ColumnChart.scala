@@ -2,37 +2,12 @@ package Visuals
 
 import scalafx.collections.ObservableBuffer
 import scalafx.scene.chart.{BarChart, CategoryAxis, NumberAxis, XYChart}
-import scalafx.scene.control
-import javafx.scene.control.Tooltip
-import scalafx.scene.Node
 
 
 class ColumnChart:
   
-  def makeColumnChart(fileName: String, purchaseDate: String) = 
-    val priceData = Data.StockData().zipDatesAndPrices(fileName)
-    val priceDataM = Data.StockData().pricesFromMonth(priceData, purchaseDate)
-    
-    val chartData = new XYChart.Series[String, Number]
-    chartData.setName("Monthly Prices")
-    chartData.data = priceDataM.map(pd => XYChart.Data[String, Number](pd._1, pd._2))
-
-    val xAxis = CategoryAxis()
-    val yAxis = NumberAxis()
-
-    val makeColumnChart = new BarChart[String, Number](xAxis, yAxis, ObservableBuffer(chartData))
-    makeColumnChart
+  def makeColumnChart(fileName: String, purchaseDate: String) =
+    Chart().makeChart(fileName, purchaseDate, "bar")
 
   def makeMultiColumnChart(stockList: Array[(String, Double)], purchaseDates: Array[String]) =
-    val priceData = Data.StockData().pricesFromMonthv3(stockList, purchaseDates)
-
-    val chartData = new XYChart.Series[String, Number]
-    chartData.setName("Monthly Prices")
-    chartData.data = priceData.map(pd => XYChart.Data[String, Number](pd._1, pd._2))
-
-    val xAxis = CategoryAxis()
-    val yAxis = NumberAxis()
-
-    val makeColumnChart = new BarChart[String, Number](xAxis, yAxis, ObservableBuffer(chartData))
-
-    makeColumnChart
+    Chart().makeMultiChart(stockList, purchaseDates, "bar")

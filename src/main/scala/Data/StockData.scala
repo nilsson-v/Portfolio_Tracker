@@ -15,6 +15,10 @@ import scala.collection.mutable.{ArrayBuffer, ListBuffer}
 import scala.concurrent.Await
 import scala.io.Source
 
+/** If this program is used with the Alpha Vantage premium API:
+ * - Give all "val jsonString" the following value: Data.DataReader().getAPI(fileName)
+ * If this program is used with manually downloaded files
+ * - Give all "val jsonString" the following value: os.read(os.pwd / "APIFiles" /fileName)*/
 
 class StockData:
 
@@ -30,12 +34,6 @@ class StockData:
     val listBufferResult = Await.result(observableBuffer, 5.seconds)
     val observableBufferResult= ObservableBuffer(listBufferResult.toList)
     observableBufferResult
-
-  private def singleClosePrice(fileName: String, date: String) =
-    val jsonString = os.read(os.pwd / "APIFiles" / fileName)
-    val parsedJson = parseJson(jsonString)
-    val openValue = (parsedJson \ "Monthly Adjusted Time Series" \ date \ "5. adjusted close").extract[String]
-    openValue
 
   private def closePrice(fileName: String) =
     val jsonString = os.read(os.pwd / "APIFiles" / fileName)
@@ -73,15 +71,6 @@ class StockData:
     val closingPrices = closePrice(fileName)
     closingPrices.head
 
-  //combines different stock prices
-  def combineStockPrices(stockList: Array[String]): Array[(String, Double)] =
-    val getStocks: Array[Array[(String, Double)]] = stockList.map(stock => zipDatesAndPrices(stock))
-    val groupedStocks = getStocks.flatten.groupBy(_._1)
-    val combinedStocks = groupedStocks.map((key, values) => (key, values.map(_._2).sum))
-    val stocksToArray = combinedStocks.toArray
-    val sorted = stocksToArray.sorted
-    sorted
-
   //multiplies the stocks value with desired multiplier
   def multiplyStocks(fileName: String, multiplier: Double) =
     val stockArray = zipDatesAndPrices(fileName)
@@ -96,16 +85,9 @@ class StockData:
     symbol
 
     //takes as parameter an Array with the stocks and their corresponding multiplier
-    //returns an array with months and the combined price of each stock that month
-  def multiplyAndCombine(stockList: Array[(String, Double)]): Array[(String, Double)] =
-    val makeArray = stockList.map((stock, multiplier) => multiplyStocks(stock, multiplier))
-    val groupedStocks = makeArray.flatten.groupBy(_._1)
-    val combinedStocks = groupedStocks.map((key, values) => (key, values.map(_._2).sum))
-    val stocksToArray = combinedStocks.toArray
-    val sorted = stocksToArray.sorted
-    sorted
-
-  def pricesFromMonthv3(stockList: Array[(String, Double)], purchaseDates: Array[String]) =
+    //takes as second parameter an array with each stocks purchase date
+    //returns an array with months and the combined price of each stock from that month
+  def combineAndMultiply(stockList: Array[(String, Double)], purchaseDates: Array[String]) =
     val zipList = stockList.zip(purchaseDates)
     val filteredStockData = zipList.map { case ((stock, multiplier), purchaseDate) =>
       val stockData = zipDatesAndPrices(stock)
@@ -114,19 +96,6 @@ class StockData:
     }
     val combinedData = filteredStockData.flatten.groupBy(_._1).view.mapValues(_.map(_._2).sum)
     combinedData.toArray.sorted
-
-  def findGrowthValue(stockList: Array[(String, Double)], purchaseDates: Array[String]) =
-    val cuttedStocks = ArrayBuffer[Array[(String, Double)]]()
-    val priceDifferences = ArrayBuffer[Double]()
-    val multiplied = stockList.map( (stock, multiplier) => multiplyStocks(stock, multiplier))
-    val stockArray = for i <- multiplied.indices do
-      cuttedStocks += pricesFromMonth(multiplied(i), purchaseDates(i))
-    for i <- cuttedStocks.indices do
-      priceDifferences += cuttedStocks(i).lastOption.map(_._2).getOrElse(0.0) - cuttedStocks(i).headOption.map(_._2).getOrElse(0.0)
-    priceDifferences.sum
-
-  //replace jsonString with this Data.DataReader().getAPI(fileName)
-
 
 
 

@@ -2,17 +2,26 @@
     "Meta Data": {
         "1. Information": "Monthly Adjusted Prices and Volumes",
         "2. Symbol": "NFLX",
-        "3. Last Refreshed": "2024-03-07",
+        "3. Last Refreshed": "2024-04-05",
         "4. Time Zone": "US/Eastern"
     },
     "Monthly Adjusted Time Series": {
-        "2024-03-14": {
+        "2024-04-05": {
+            "1. open": "608.0000",
+            "2. high": "639.0000",
+            "3. low": "605.5101",
+            "4. close": "628.4100",
+            "5. adjusted close": "628.4100",
+            "6. volume": "15461279",
+            "7. dividend amount": "0.0000"
+        },
+        "2024-03-28": {
             "1. open": "599.8100",
-            "2. high": "624.4200",
+            "2. high": "634.3899",
             "3. low": "592.0000",
-            "4. close": "608.5100",
-            "5. adjusted close": "608.5100",
-            "6. volume": "16352571",
+            "4. close": "607.3300",
+            "5. adjusted close": "607.3300",
+            "6. volume": "60082935",
             "7. dividend amount": "0.0000"
         },
         "2024-02-29": {

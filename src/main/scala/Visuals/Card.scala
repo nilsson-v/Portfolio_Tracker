@@ -8,6 +8,8 @@ import scalafx.scene.paint.Color
 import scalafx.scene.shape.Rectangle
 import scalafx.scene.text.{Font, FontWeight, Text, TextAlignment}
 
+import scala.collection.mutable.ArrayBuffer
+
 class Card:
 
   val font = Font.font("Arial", FontWeight.Bold, 25)
@@ -17,6 +19,16 @@ class Card:
     for i <- numbers.indices do
       count = count + numbers(i)
     count
+
+  def findGrowthValue(stockList: Array[(String, Double)], purchaseDates: Array[String]) =
+    val cuttedStocks = ArrayBuffer[Array[(String, Double)]]()
+    val priceDifferences = ArrayBuffer[Double]()
+    val multiplied = stockList.map( (stock, multiplier) => Data.StockData().multiplyStocks(stock, multiplier))
+    val stockArray = for i <- multiplied.indices do
+      cuttedStocks += Data.StockData().pricesFromMonth(multiplied(i), purchaseDates(i))
+    for i <- cuttedStocks.indices do
+      priceDifferences += cuttedStocks(i).lastOption.map(_._2).getOrElse(0.0) - cuttedStocks(i).headOption.map(_._2).getOrElse(0.0)
+    priceDifferences.sum
 
   def getPrices(stockList: Array[(String, Double)]) =
     var priceList = Array[Double]()
@@ -59,7 +71,7 @@ class Card:
 
   def makeGrowthCard(stockList: Array[(String, Double)], purchaseDates: Array[String]) =
 
-    val priceData = Data.StockData().findGrowthValue(stockList, purchaseDates)
+    val priceData = findGrowthValue(stockList, purchaseDates)
     val roundedGrowth = BigDecimal(priceData).setScale(1, BigDecimal.RoundingMode.HALF_UP)
     val sign: String = if priceData > 0 then
       "+"
@@ -97,7 +109,7 @@ class Card:
 
   def makeMaxCard(stockList: Array[(String, Double)], purchaseDates: Array[String]): scalafx.scene.Node =
 
-    val priceData = Data.StockData().pricesFromMonthv3(stockList, purchaseDates)
+    val priceData = Data.StockData().combineAndMultiply(stockList, purchaseDates)
     val maxValue = if priceData.nonEmpty then priceData.map(_._2).max else 0
     val maxValuePrint = BigDecimal(maxValue).setScale(1, BigDecimal.RoundingMode.HALF_UP)
 
@@ -128,7 +140,7 @@ class Card:
 
   def makeMinCard(stockList: Array[(String, Double)], purchaseDates: Array[String]): scalafx.scene.Node =
 
-    val priceData = Data.StockData().pricesFromMonthv3(stockList, purchaseDates)
+    val priceData = Data.StockData().combineAndMultiply(stockList, purchaseDates)
     val minValue = if priceData.nonEmpty then priceData.map(_._2).min else 0
     val minValuePrint = BigDecimal(minValue).setScale(1, BigDecimal.RoundingMode.HALF_UP)
 

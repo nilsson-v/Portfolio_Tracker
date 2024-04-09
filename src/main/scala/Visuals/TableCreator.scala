@@ -3,7 +3,7 @@ package Visuals
 import scalafx.collections.ObservableBuffer
 import scalafx.scene.control.{TableColumn, TableView}
 
-class CreateTable:
+class TableCreator:
   
   def showSymbol(fileName: String) =
     Data.StockData().getSymbol(fileName)
@@ -47,5 +47,5 @@ class CreateTable:
 
     tableView
 
-end CreateTable
+end TableCreator
 

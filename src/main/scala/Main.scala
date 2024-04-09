@@ -118,7 +118,9 @@ object Main extends JFXApp3:
     var dateEntries2: ArrayBuffer[String] = ArrayBuffer()
 
     /** Exports the data to selected folder in CSV format using saveData function*/
-    exportFile.onAction = (e: ActionEvent) => {
+    exportFile.onAction = (e: ActionEvent) => exportFiles()
+
+    def exportFiles() = {
       val fileChooser = new FileChooser()
       fileChooser.title = "Save data"
       fileChooser.extensionFilters.addAll( new FileChooser.ExtensionFilter("CSV Files", "*.csv"),new FileChooser.ExtensionFilter("All Files", "*.*"))
@@ -133,7 +135,9 @@ object Main extends JFXApp3:
     /** Import a CSV file using loadData function.
      * After loading the data the stock- and date entries are cleared and replaced with the imported data.
      * After that the visuals are updated with the new values in the arrays.*/
-    importFile.onAction = (e: ActionEvent) => {
+    importFile.onAction = (e: ActionEvent) => importFiles()
+
+    def importFiles() = {
       val fileChooser = new FileChooser()
       fileChooser.title = "Import data"
       fileChooser.extensionFilters.addAll(
@@ -170,7 +174,9 @@ object Main extends JFXApp3:
 
     }
 
-      hideCards.onAction = (e: ActionEvent) => {
+      hideCards.onAction = (e: ActionEvent) => hideCard()
+
+      def hideCard() = {
           val stocksVisualize = stockEntries.toArray
           val stocksVisualize2 = stockEntries2.toArray
           val stocksPlot = Visuals.ColumnChart().makeMultiColumnChart(stocksVisualize2, dateEntries2.toArray)
@@ -192,7 +198,9 @@ object Main extends JFXApp3:
           tooltipsHovering(stocksPlot, pieChart)
       }
 
-       showCards.onAction = (e: ActionEvent) => {
+       showCards.onAction = (e: ActionEvent) => showCard()
+
+       def showCard() = {
           val stocksVisualize = stockEntries.toArray
           val stocksVisualize2 = stockEntries2.toArray
           val stocksPlot = Visuals.ColumnChart().makeMultiColumnChart(stocksVisualize2, dateEntries2.toArray)
@@ -217,7 +225,9 @@ object Main extends JFXApp3:
 
     /** The remove button: this button is responsible for removing stocks.
      * When pressing the button an prompt will appear asking for what stock and how much of it should be removed */
-    removeButton.onAction = (e: ActionEvent) => {
+    removeButton.onAction = (e: ActionEvent) => removeStock()
+
+    def removeStock() = {
       val stockDialog = new TextInputDialog(defaultValue = "Default Value")
       stockDialog.initOwner(stage)
       stockDialog.title = "Stock"
@@ -328,7 +338,11 @@ object Main extends JFXApp3:
     /** The add button: responsible for adding stocks to the dashboard.
      * When pressing the addbutton the user will be prompted to input the stock, its amount and purchaseDate*/
     //todo Error handling if stock is not in files!!
-    addButton.onAction = (e: ActionEvent) => {
+    addButton.onAction = (e: ActionEvent) =>
+      addStock()
+      controlMenu.setVisible(true)
+
+    def addStock() = {
       val stockDialog = new TextInputDialog(defaultValue = "Default Value")
       stockDialog.initOwner(stage)
       stockDialog.title = "Stock"
@@ -403,7 +417,6 @@ object Main extends JFXApp3:
             rootPane.center = tab
 
           tooltipsHovering(stocksPlot, pieChart)
-          controlMenu.setVisible(true)
 
         case _ => println("Dialog cancelled")
         }

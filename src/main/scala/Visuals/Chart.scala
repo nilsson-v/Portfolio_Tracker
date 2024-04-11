@@ -2,7 +2,6 @@ package Visuals
 
 import scalafx.collections.ObservableBuffer
 import scalafx.scene.chart.{BarChart, CategoryAxis, LineChart, NumberAxis, ScatterChart, XYChart}
-import scalafx.scene.paint.Color
 
 class Chart:
 
@@ -22,19 +21,19 @@ class Chart:
          val barChart = new BarChart[String, Number](xAxis, yAxis, ObservableBuffer(chartData)).asInstanceOf[T]
          chartData.getData.forEach( data =>
            val dataNode = data.getNode
-           dataNode.setStyle("-fx-bar-fill: " + color.toString + "; "))
+           dataNode.setStyle("-fx-bar-fill: " + color + "; "))
          barChart
       case "line" =>
          val lineChart = new LineChart[String, Number](xAxis, yAxis, ObservableBuffer(chartData)).asInstanceOf[T]
          chartData.getData.forEach( data =>
            val dataNode = data.getNode
-           dataNode.setStyle("-fx-background-color: " + color.toString + "; "))
+           dataNode.setStyle("-fx-background-color: " + color + "; "))
          lineChart
       case "scatter" =>
         val scatterChart = new ScatterChart[String, Number](xAxis, yAxis, ObservableBuffer(chartData)).asInstanceOf[T]
          chartData.getData.forEach( data =>
            val dataNode = data.getNode
-           dataNode.setStyle("-fx-background-color: " + color.toString + "; "))
+           dataNode.setStyle("-fx-background-color: " + color + "; "))
         scatterChart
     }
 
@@ -55,19 +54,19 @@ class Chart:
          val barChart = new BarChart[String, Number](xAxis, yAxis, ObservableBuffer(chartData)).asInstanceOf[T]
          chartData.getData.forEach( data =>
            val dataNode = data.getNode
-           dataNode.setStyle("-fx-bar-fill: " + color.toString + "; "))
+           dataNode.setStyle("-fx-bar-fill: " + color + "; "))
          barChart
       case "line" =>
          val lineChart = new LineChart[String, Number](xAxis, yAxis, ObservableBuffer(chartData)).asInstanceOf[T]
          chartData.getData.forEach( data =>
            val dataNode = data.getNode
-           dataNode.setStyle("-fx-background-color: " + color.toString + "; "))
+           dataNode.setStyle("-fx-background-color: " + color + "; "))
          lineChart
       case "scatter" =>
         val scatterChart = new ScatterChart[String, Number](xAxis, yAxis, ObservableBuffer(chartData)).asInstanceOf[T]
          chartData.getData.forEach( data =>
            val dataNode = data.getNode
-           dataNode.setStyle("-fx-background-color: " + color.toString + "; "))
+           dataNode.setStyle("-fx-background-color: " + color + "; "))
         scatterChart
     }
     chart

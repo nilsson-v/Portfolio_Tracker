@@ -600,7 +600,7 @@ object Main extends JFXApp3:
 
         (priceResult, priceResult2, dateResult) match {
           case (Some(stock1), Some(stock2), Some(date)) => {
-            val stocksArray = Array(stock1.toString, stock2.toString)
+            val stocksArray = Array(stock1, stock2)
             val validDateFormat = "\\d{4}-\\d{2}".r
             if validDateFormat.findFirstIn(date).isDefined then
              tab += makeTwoSeriesChart(stocksArray, date)

@@ -45,8 +45,7 @@ class Card:
 
     val cardContent = new VBox
     val label = new Label("Total holdings")
-    cardContent.alignmentInParent = Pos.Center
-    label.alignmentInParent = Pos.Center
+    cardContent.setAlignment(Pos.Center)
     label.setTextFill(Color.Black)
     label.setFont(font)
 
@@ -57,6 +56,7 @@ class Card:
 
     val content = new Text
     content.setText("$"+roundedSum.toString)
+    content.setTextAlignment(TextAlignment.Center)
     content.setFill(Color.Black)
     content.setFont(font)
 
@@ -96,6 +96,7 @@ class Card:
 
     val content = new Text
     content.setText(sign + "$" + roundedGrowth.toString)
+    content.setTextAlignment(TextAlignment.Center)
     content.setFill(Color.Black)
     content.setFont(font)
 
@@ -126,6 +127,7 @@ class Card:
 
     val content = new Text
     content.setText("$"+maxValuePrint.toString)
+    content.setTextAlignment(TextAlignment.Center)
     content.setFill(Color.Black)
     content.setFont(font)
 
@@ -157,6 +159,7 @@ class Card:
 
     val content = new Text
     content.setText("$" + minValuePrint.toString)
+    content.setTextAlignment(TextAlignment.Center)
     content.setFill(Color.Black)
     content.setFont(font)
 

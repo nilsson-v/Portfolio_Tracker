@@ -15,49 +15,14 @@ import scala.concurrent.Future
 
 
 class DataReader:
-  
+
   /** INSERT API Key here*/
   val APIKey = "SZPPN9IYEA485BC9"
-  
-  val folderPath = os.Path("/APIFiles")
-
-  def fetchAPIfromURL(ticker: String) = 
-    val url = "https://www.alphavantage.co/query?function=TIME_SERIES_MONTHLY_ADJUSTED&symbol=" + ticker + "&apikey=" + APIKey + "&datatype=json"
-    val connection = new URL(url).openConnection()
-    val in = new BufferedInputStream(connection.getInputStream)
-    val out = new FileOutputStream(ticker)
-    try {
-      val buffer = new Array[Byte](1024)
-      var bytesRead = in.read(buffer)
-      while (bytesRead != -1) {
-        out.write(buffer, 0, bytesRead)
-        bytesRead = in.read(buffer)
-      }
-    } finally {
-      in.close()
-      out.close()
-    }
-  
 
   def getAPI(ticker: String) =
     val url = new URL("https://www.alphavantage.co/query?function=TIME_SERIES_MONTHLY_ADJUSTED&symbol=" + ticker + "&apikey=" + APIKey + "&datatype=json")
     val jsonString = Source.fromInputStream(url.openStream()).mkString
     jsonString
-
-  def fetchAPI(ticker: String, fileName: String) =
-   val url = "https://www.alphavantage.co/query?function=TIME_SERIES_MONTHLY_ADJUSTED&symbol=" + ticker + "&apikey=" + APIKey + "&datatype=json"
-   val jsonString = Source.fromURL(url).mkString
-   val parsed = parseJson(jsonString)
-   os.makeDir.all(folderPath)
-
-   Using(scala.io.Source.fromURL(url)) { source =>
-     val fileContent = source.mkString
-     val filePath = folderPath/fileName
-     os.write.over(filePath, fileContent)
-   }
-
-   println("File: " + fileName + " was imported succesfully " + url)
-
 
   def saveData(stockEntries1: ArrayBuffer[(String, Double)], dateEntries1: ArrayBuffer[String], stockEntries2: ArrayBuffer[(String, Double)], dateEntries2: ArrayBuffer[String], filePath: String): Unit = {
     val file = new File(filePath)

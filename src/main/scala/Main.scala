@@ -1,15 +1,17 @@
 import Visuals.Table
+import javafx.scene
 import scalafx.scene.{Node, Scene, control}
-import scalafx.scene.control.{Alert, Menu, MenuBar, MenuItem, ScrollPane, Slider, SplitPane, Tab, TabPane, TableView, TextInputDialog, Tooltip}
+import scalafx.scene.control.{Alert, Label, Menu, MenuBar, MenuItem, ScrollPane, Slider, SplitPane, Tab, TabPane, TableView, TextInputDialog, Tooltip}
 import scalafx.application.JFXApp3
 import scalafx.event.ActionEvent
 import scalafx.scene.layout.{BorderPane, HBox}
-import scalafx.stage.FileChooser
+import scalafx.stage.{FileChooser, Modality, Popup, Stage}
 import scalafx.stage.FileChooser.*
 import scalafx.Includes.*
 import scalafx.geometry.Orientation
 import scalafx.scene.chart.{Chart, PieChart, XYChart}
 import scalafx.scene.control.Alert.AlertType
+import scalafx.scene.input.MouseEvent
 import scalafx.scene.paint.Color
 
 import java.io.File
@@ -29,8 +31,8 @@ object Main extends JFXApp3:
 
     val rootPane = new BorderPane
 
-    val scene = Scene(parent = rootPane)
-    stage.scene = scene
+    val portfolioScene = Scene(parent = rootPane)
+    stage.scene = portfolioScene
 
     /**This section contains the menu bar with all the other options
      * menubar consists of: fileMenu, createMenu, controlMenu and ChartMenu*/
@@ -86,50 +88,67 @@ object Main extends JFXApp3:
     rootPane.top = menuBar
 
     def tooltipsHovering[T <: Chart](stocksPlot: T, pieChart: PieChart) = {
-      stocksPlot match
-         case xyChart: XYChart[_, _] => {
-          xyChart.getData.foreach( series=> {
-          series.getData.foreach( d => {
-            val pointNode: scalafx.scene.Node = d.getNode
-            val pointValue = d.getYValue.toString
-            val pointMonth = d.getXValue.toString
-            val roundedValue = BigDecimal(pointValue).setScale(1, BigDecimal.RoundingMode.HALF_UP)
-            val tooltip = new Tooltip()
-            tooltip.setText(pointMonth + ": " + "$" + roundedValue.toString)
-            tooltip.setStyle("-fx-background-color: yellow; " + "-fx-text-fill: black; ")
-            Tooltip.install(pointNode, tooltip)
-          })})
+    stocksPlot match
+       case xyChart: XYChart[_, _] => {
+        xyChart.getData.foreach( series=> {
+        series.getData.foreach( d => {
+          val pointNode: scalafx.scene.Node = d.getNode
+          val pointValue = d.getYValue.toString
+          val pointMonth = d.getXValue.toString
+          val roundedValue = BigDecimal(pointValue).setScale(1, BigDecimal.RoundingMode.HALF_UP)
+          val tooltip = new Tooltip()
+          tooltip.setText(pointMonth + ": " + "$" + roundedValue.toString)
+          tooltip.setStyle("-fx-background-color: yellow; " + "-fx-text-fill: black; ")
+          Tooltip.install(pointNode, tooltip)
+        })})
 
-          val total = pieChart.getData.foldLeft(0.0) {(x, y) => x + y.getPieValue}
+        val total = pieChart.getData.foldLeft(0.0) {(x, y) => x + y.getPieValue}
 
-          pieChart.getData.foreach( d => {
-            val sliceNode: scalafx.scene.Node = d.getNode
-            val pieValue = d.getPieValue
-            val percent = (pieValue / total) * 100
-            val msg = "%s: %.2f (%.2f%%)".format(d.getName, pieValue, percent)
-            val tt = new Tooltip()
-            tt.setText(msg)
-            tt.setStyle("-fx-background-color: yellow; " +  "-fx-text-fill: black; ")
-            Tooltip.install(sliceNode, tt) })
-        }
-    }
+        pieChart.getData.foreach( d => {
+          val sliceNode: scalafx.scene.Node = d.getNode
+          val pieValue = d.getPieValue
+          val percent = (pieValue / total) * 100
+          val msg = "%s: %.2f (%.2f%%)".format(d.getName, pieValue, percent)
+          val tt = new Tooltip()
+          tt.setText(msg)
+          tt.setStyle("-fx-background-color: yellow; " +  "-fx-text-fill: black; ")
+          Tooltip.install(sliceNode, tt) })
+      }
+  }
 
-    def plotHovering[T <: Chart](stocksPlot: T) = {
-      stocksPlot match
-         case xyChart: XYChart[_, _] => {
-          xyChart.getData.foreach( series=> {
-          series.getData.foreach( d => {
-            val pointNode: scalafx.scene.Node = d.getNode
-            val pointValue = d.getYValue.toString
-            val pointMonth = d.getXValue.toString
-            val roundedValue = BigDecimal(pointValue).setScale(1, BigDecimal.RoundingMode.HALF_UP)
-            val tooltip = new Tooltip()
-            tooltip.setText(pointMonth + ": " + "$" + roundedValue.toString)
-            tooltip.setStyle("-fx-background-color: yellow; " + "-fx-text-fill: black; ")
-            Tooltip.install(pointNode, tooltip)
-          })})
+
+    def plotHovering[T <: Chart](stocksPlot: T): Unit = {
+      stocksPlot match {
+        case xyChart: XYChart[_, _] =>
+          xyChart.getData.foreach { series =>
+            series.getData.foreach { d =>
+              val pointNode = d.getNode
+              val pointValue = d.getYValue.toString
+              val pointMonth = d.getXValue.toString
+              val roundedValue = BigDecimal(pointValue).setScale(1, BigDecimal.RoundingMode.HALF_UP)
+
+              val tooltip = new Tooltip()
+              tooltip.setText(s"$pointMonth: $$$roundedValue")
+              tooltip.setStyle("-fx-background-color: yellow; -fx-text-fill: black;")
+              javafx.scene.control.Tooltip.install(pointNode, tooltip)
+
+              pointNode.setOnMouseClicked((event: MouseEvent) => {
+                val label = new Label(s"Price: $$$pointValue  Date: $pointMonth")
+                label.setStyle("-fx-background-color: white; -fx-padding: 10px;")
+
+                val popup = new Popup()
+                popup.content.add(label)
+                popup.setAutoHide(true)
+                popup.show(stage)
+                popup.setX(event.screenX - 50)
+                popup.setY(event.screenY - 50)
+                popup.setOnHidden(_ => popup.content.clear())
+              })
+            }
+          }
       }
     }
+
     /** This section is the most relevant for making the dashboard tab
      * first we create a new TabPane */
     val tab = new TabPane
@@ -651,3 +670,11 @@ object Main extends JFXApp3:
 
 end Main
 
+  /** pointNode.setOnMouseClicked((event: MouseEvent) => {
+              val clicker = new Stage {
+                initModality(Modality.ApplicationModal)
+                title = "Information"
+                scene = new Scene {
+                  content = new BorderPane {
+                    val label = new Label(s"Price: $pointValue  Date: $pointMonth")
+                    center = label // Set the label as the center content of the BorderPane */

@@ -1,14 +1,16 @@
 package Visuals
 
+
+import Data.StockData
 import scalafx.collections.ObservableBuffer
 import scalafx.scene.control.{TableColumn, TableView}
 
 class TableCreator:
   
   def showSymbol(fileName: String) =
-    Data.StockData().getSymbol(fileName)
+    StockData().getSymbol(fileName)
   def showPrice(fileName: String) =
-    Data.StockData().latestPrice(fileName)
+    StockData().latestPrice(fileName)
   
 
   def createTable(stockList: Array[(String, Double)]) =

@@ -1,13 +1,14 @@
 package Visuals
 
+import Data.StockData
 import scalafx.collections.ObservableBuffer
 import scalafx.scene.chart.{BarChart, CategoryAxis, LineChart, NumberAxis, ScatterChart, XYChart}
 
 class Chart:
 
   def makeChart[T <: XYChart[String, Number]](fileName: String, purchaseDate: String, chartType: String, color: String): XYChart[String, Number]  =
-    val priceData = Data.StockData().zipDatesAndPrices(fileName)
-    val priceDataM = Data.StockData().pricesFromMonth(priceData, purchaseDate)
+    val priceData = StockData().zipDatesAndPrices(fileName)
+    val priceDataM = StockData()pricesFromMonth(priceData, purchaseDate)
 
     val chartData = new XYChart.Series[String, Number]
     chartData.setName("Monthly Prices")
@@ -40,7 +41,7 @@ class Chart:
     chart
 
   def makeMultiChart[T <: XYChart[String, Number]](stockList: Array[(String, Double)], purchaseDates: Array[String], chartType: String, color: String): XYChart[String, Number] =
-    val priceData = Data.StockData().combineAndMultiply(stockList, purchaseDates)
+    val priceData = StockData().combineAndMultiply(stockList, purchaseDates)
 
     val chartData = new XYChart.Series[String, Number]
     chartData.setName("Monthly Prices")
@@ -73,11 +74,11 @@ class Chart:
 
 
   def makeTwoSeriesChart(stockList: Array[String], purchaseDate: String): XYChart[String, Number] = {
-    val priceData1 = Data.StockData().zipDatesAndPrices(stockList(0))
-    val priceData2 = Data.StockData().zipDatesAndPrices(stockList(1))
+    val priceData1 = StockData().zipDatesAndPrices(stockList(0))
+    val priceData2 = StockData().zipDatesAndPrices(stockList(1))
 
-    val priceDataM1 = Data.StockData().pricesFromMonth(priceData1, purchaseDate)
-    val priceDataM2 = Data.StockData().pricesFromMonth(priceData2, purchaseDate)
+    val priceDataM1 = StockData().pricesFromMonth(priceData1, purchaseDate)
+    val priceDataM2 = StockData().pricesFromMonth(priceData2, purchaseDate)
 
     val chartData1 = new XYChart.Series[String, Number]
     chartData1.setName(stockList(0))

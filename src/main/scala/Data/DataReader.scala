@@ -24,6 +24,7 @@ class DataReader:
     val jsonString = Source.fromInputStream(url.openStream()).mkString
     jsonString
 
+
   def saveData(stockEntries1: ArrayBuffer[(String, Double)], dateEntries1: ArrayBuffer[String], stockEntries2: ArrayBuffer[(String, Double)], dateEntries2: ArrayBuffer[String], filePath: String): Unit = {
     val file = new File(filePath)
     val fileWriter = new FileWriter(file)
@@ -60,6 +61,7 @@ class DataReader:
 
     var currentSection: Option[String] = None
 
+    
     val source = Source.fromFile(filePath)
     try {
       for (line <- source.getLines()) {
@@ -69,6 +71,8 @@ class DataReader:
             case "StockEntries1" => currentSection = Some("StockEntries1")
             case "StockEntries2" => currentSection = Some("StockEntries2")
             case ""              => currentSection = None
+            
+            /** I have used AI tools for this part to correctly parse it */
             case data if currentSection.contains("StockEntries1") =>
               val parts = data.split(",")
               if (parts.length == 2) {

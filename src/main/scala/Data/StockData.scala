@@ -1,22 +1,22 @@
 package Data
 
-import upickle.default.*
-import org.json4s
-import org.json4s.JsonAST.JField
-import org.json4s.{DefaultFormats, JField, JObject, JString, jvalue2extractable, jvalue2monadic}
-import org.json4s.jackson.{JsonMethods, parseJson, parseJsonOpt}
+import Data.DataReader
 import akka.actor.ActorSystem
 import akka.stream.scaladsl.{Sink, Source as AkkaSource}
-
-import scala.concurrent.duration.*
+import org.json4s
+import org.json4s.JsonAST.JField
+import org.json4s.jackson.{JsonMethods, parseJson, parseJsonOpt}
+import org.json4s.{DefaultFormats, JField, JObject, JString, jvalue2extractable, jvalue2monadic}
 import scalafx.collections.ObservableBuffer
+import upickle.default.*
 
 import scala.collection.mutable.{ArrayBuffer, ListBuffer}
 import scala.concurrent.Await
+import scala.concurrent.duration.*
 
 
 /** If this program is used with the Alpha Vantage premium API:
- * - Give all "val jsonString" the following value: Data.DataReader().getAPI(fileName)
+ * - Give all "val jsonString" the following value: DataReader().getAPI(fileName)
  * If this program is used with manually downloaded files
  * - Give all "val jsonString" the following value: os.read(os.pwd / "APIFiles" /fileName)*/
 

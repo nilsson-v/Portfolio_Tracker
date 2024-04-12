@@ -5,16 +5,16 @@ import scalafx.scene.chart.{CategoryAxis, LineChart, NumberAxis, XYChart}
 import scalafx.scene.paint.Color
 
 
-class LineChart:
+class LineChart extends Chart:
 
   def makeLineChart(fileName: String, purchaseDate: String, color: String) =
-    Chart().makeChart(fileName, purchaseDate, "line", color)
+    makeChart(fileName, purchaseDate, "line", color)
 
   def makeMultiLineChart(stockList: Array[(String, Double)], purchaseDates: Array[String], color: String) =
-    Chart().makeMultiChart(stockList, purchaseDates, "line", color)
+    makeMultiChart(stockList, purchaseDates, "line", color)
 
   def makeTwoSeriesLineChart(stockList: Array[String], purchaseDate: String) =
-    Chart().makeTwoSeriesChart(stockList, purchaseDate)
+    makeTwoSeriesChart(stockList, purchaseDate)
     
 
 

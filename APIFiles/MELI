@@ -2,11 +2,11 @@
     "Meta Data": {
         "1. Information": "Monthly Adjusted Prices and Volumes",
         "2. Symbol": "MELI",
-        "3. Last Refreshed": "2024-04-09",
+        "3. Last Refreshed": "2024-04-12",
         "4. Time Zone": "US/Eastern"
     },
     "Monthly Adjusted Time Series": {
-        "2024-04-09": {
+        "2024-04-12": {
             "1. open": "1527.2500",
             "2. high": "1540.9800",
             "3. low": "1478.6200",

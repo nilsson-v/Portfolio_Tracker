@@ -16,6 +16,8 @@ class Card:
   val font = Font.font("Arial", FontWeight.Bold, 25)
 
 
+  /** Finds how much each stock entry has grown since it was bought.
+   * Adds all the growth values to find the total growth  */
   def findGrowthValue(stockList: Array[(String, Double)], purchaseDates: Array[String]) =
     val cuttedStocks = ArrayBuffer[Array[(String, Double)]]()
     val priceDifferences = ArrayBuffer[Double]()
@@ -26,6 +28,8 @@ class Card:
       priceDifferences += cuttedStocks(i).lastOption.map(_._2).getOrElse(0.0) - cuttedStocks(i).headOption.map(_._2).getOrElse(0.0)
     priceDifferences.sum
 
+  /** Takes as parameter a list with stocks and their multipliers¨
+   * multiplies each price with their corresponding stock and adds all the prices to one list*/
   def getPrices(stockList: Array[(String, Double)]) =
     var priceList = Array[Double]()
     val getStocks: Array[Array[(String, Double)]] = stockList.map((stock, multiplier)
@@ -34,6 +38,7 @@ class Card:
       priceList ++= Array(getStocks(i).last._2)
     priceList
 
+  /** Creates the card that shows the total value of the portfolio */
   def makeSumCard(stockList: Array[(String, Double)]) =
     val priceList = getPrices(stockList)
     val priceSum = priceList.sum
@@ -64,7 +69,7 @@ class Card:
 
   end makeSumCard
 
-
+  /** Creates the card that shows the portfolios total grwoth */
   def makeGrowthCard(stockList: Array[(String, Double)], purchaseDates: Array[String]) =
 
     val priceData = findGrowthValue(stockList, purchaseDates)
@@ -104,6 +109,7 @@ class Card:
 
   end makeGrowthCard
 
+  /** Finds the max value, meaning the all-time high of the portfolio */
   def makeMaxCard(stockList: Array[(String, Double)], purchaseDates: Array[String]): scalafx.scene.Node =
 
     val priceData = StockData().combineAndMultiply(stockList, purchaseDates)
@@ -135,7 +141,7 @@ class Card:
 
   end makeMaxCard
 
-
+  /**Finds the min value, meaning the all-time low of the portfolio*/
   def makeMinCard(stockList: Array[(String, Double)], purchaseDates: Array[String]): scalafx.scene.Node =
 
     val priceData = StockData().combineAndMultiply(stockList, purchaseDates)

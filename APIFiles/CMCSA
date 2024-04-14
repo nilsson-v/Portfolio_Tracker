@@ -2,11 +2,11 @@
     "Meta Data": {
         "1. Information": "Monthly Adjusted Prices and Volumes",
         "2. Symbol": "CMCSA",
-        "3. Last Refreshed": "2024-04-05",
+        "3. Last Refreshed": "2024-04-12",
         "4. Time Zone": "US/Eastern"
     },
     "Monthly Adjusted Time Series": {
-        "2024-04-05": {
+        "2024-04-12": {
             "1. open": "43.0300",
             "2. high": "43.0500",
             "3. low": "40.6350",

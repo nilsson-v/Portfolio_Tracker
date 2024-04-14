@@ -51,7 +51,6 @@ object Main extends JFXApp3:
 
 
     /**This section contains the menu bar with all the other options*/
-
     val menuBar = new MenuBar
 
     val fileMenu = new Menu("File")
@@ -107,6 +106,7 @@ object Main extends JFXApp3:
 
     val tab = new TabPane
 
+    /** Texts for the help button */
     val addStockText =
       "If you want to add a stock to your portfolio follow these steps: "
       + "\n1: Press the button named Portfolio"
@@ -151,9 +151,10 @@ object Main extends JFXApp3:
     var currentColor = "Red"
     var cardVisibility = true
 
+
     /** In this section are all the methods that are used for creating the visuals */
 
-
+    /** Used for creating each of the help popups that helps the user to navigate the program*/
     def helpBox(helpText: String) =
       val label = new Label(helpText)
       label.setStyle("-fx-background-color: lightgreen; -fx-padding: 10px;")
@@ -165,6 +166,7 @@ object Main extends JFXApp3:
       popupText.setY(400)
       popupText.setOnHidden(_ => popupText.content.clear())
 
+    /** Function for hovering over data points, both tooltip and popup for chart, and tooltip for pie */
     def tooltipsHovering[T <: Chart](stocksPlot: T, pieChart: PieChart) = {
     stocksPlot match
        case xyChart: XYChart[_, _] => {
@@ -174,15 +176,16 @@ object Main extends JFXApp3:
           val pointValue = d.getYValue.toString
           val pointMonth = d.getXValue.toString
           val roundedValue = BigDecimal(pointValue).setScale(1, BigDecimal.RoundingMode.HALF_UP)
+          /** Tooltips for hovering over datapoint */
           val tooltip = new Tooltip()
           tooltip.setText(pointMonth + ": " + "$" + roundedValue.toString)
           tooltip.setStyle("-fx-background-color: yellow; " + "-fx-text-fill: black; ")
           Tooltip.install(pointNode, tooltip)
 
+          /** Popup that appears with information  */
           pointNode.setOnMouseClicked((me: MouseEvent) => {
             val label = new Label(s"Price: $$$roundedValue  Date: $pointMonth")
             label.setStyle("-fx-background-color: white; -fx-padding: 10px;")
-
             val popup = new Popup()
             popup.content.add(label)
             popup.setAutoHide(true)
@@ -192,6 +195,7 @@ object Main extends JFXApp3:
             popup.setOnHidden(_ => popup.content.clear()) })
         })})
 
+         /** Tooltips for pie chart */
         val total = pieChart.getData.foldLeft(0.0) {(x, y) => x + y.getPieValue}
 
         pieChart.getData.foreach( d => {
@@ -205,7 +209,7 @@ object Main extends JFXApp3:
           Tooltip.install(sliceNode, tt) })
       }
   }
-
+    /** function that only shows information of datapoints on charts, this is used in "inspect stocks" where no pie is shown */
     def plotHovering[T <: Chart](stocksPlot: T): Unit = {
       stocksPlot match {
         case xyChart: XYChart[_, _] =>
@@ -237,6 +241,9 @@ object Main extends JFXApp3:
           }
       }
     }
+
+    /** Updates the tab by adding the new information to the visuals
+     * This is called everytime the user does a change in their portfolio */
     def updateTab() = {
       val stocksVisualize = stockEntries.toArray
       val stocksVisualize2 = stockEntries2.toArray
@@ -305,8 +312,9 @@ object Main extends JFXApp3:
         controlPanel.setVisible(true)
         chartColor.setVisible(true)
 
-    }
 
+    }
+    /** asks the user for a stock symbol and an amount to remove from the portfolio  */
     def removeStock() = {
       val stockDialog = new TextInputDialog(defaultValue = "Default Value")
       stockDialog.initOwner(stage)
@@ -392,10 +400,12 @@ object Main extends JFXApp3:
 
             else println("Stock not found")
 
+          /** updates tab */
           updateTab()
 
         case _ => println("Dialog cancelled") } }
 
+    /** asks the user for a stock, its amount and purchase date to add to the porftfolio*/
     def addStock() = {
       val stockDialog = new TextInputDialog(defaultValue = "Default Value")
       stockDialog.initOwner(stage)
@@ -525,8 +535,7 @@ object Main extends JFXApp3:
       makeTab
     }
 
-    /** In this section are the corresponding functions that create the plots on the action events above */
-    /** The column plot */
+    /** Creates the column plot for inspecting stocks */
     def makeColumnPlot(fileName: String, date: String) = {
       val columnPlot = columnChart.makeColumnChart(fileName, date, "Red")
       plotHovering(columnPlot)
@@ -536,7 +545,7 @@ object Main extends JFXApp3:
       makeTab
     }
 
-    /** The line plot */
+    /** Creates the line plot for inspecting stocks*/
      def makeLinePlot(fileName: String, date: String): Tab = {
       val linePlot = lineChart.makeLineChart(fileName, date, "Red")
       plotHovering(linePlot)
@@ -545,7 +554,7 @@ object Main extends JFXApp3:
       makeTab.content = linePlot
       makeTab
     }
-    /** The scatter plot */
+    /** Creates the column plot for inspecting stocks */
     def makeScatterPlot(fileName: String, date: String): Tab = {
       val scatterPlot = scatterChart.makeScatterChart(fileName, date, "Red")
       plotHovering(scatterPlot)
@@ -554,7 +563,7 @@ object Main extends JFXApp3:
       makeTab.content = scatterPlot
       makeTab
     }
-    /** two series plot for comparing stocks */
+    /** Creates the column plot for inspecting stocks */
     def makeTwoSeriesChart(stockList: Array[String], purchaseDate: String): Tab = {
       val twoSeriesChart = lineChart.makeTwoSeriesLineChart(stockList, purchaseDate)
       plotHovering(twoSeriesChart)
@@ -715,7 +724,7 @@ object Main extends JFXApp3:
         case _ => None
     }
   }
-
+    /** The two series plot */
     createTwoSeries.onAction = (e: ActionEvent) => {
         val text1 = new TextInputDialog(defaultValue = "Default Value")
         text1.initOwner(stage)

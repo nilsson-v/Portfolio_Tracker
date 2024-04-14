@@ -7,12 +7,14 @@ import scalafx.scene.control.{TableColumn, TableView}
 
 class TableCreator:
   
+  /** finds the symbol of a stock */
   def showSymbol(fileName: String) =
     StockData().getSymbol(fileName)
+  /** find the latest price of a stock */
   def showPrice(fileName: String) =
     StockData().latestPrice(fileName)
   
-
+/** creates a table showing the users stocks, their prices, their holdings and the stocks total prices. */
   def createTable(stockList: Array[(String, Double)]) =
     val symbols = stockList.map{ case(stock, _) => showSymbol(stock)}
     val latestPrices = stockList.map{ case(stock, _) => showPrice(stock)}

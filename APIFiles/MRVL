@@ -2,11 +2,11 @@
     "Meta Data": {
         "1. Information": "Monthly Adjusted Prices and Volumes",
         "2. Symbol": "MRVL",
-        "3. Last Refreshed": "2024-04-09",
+        "3. Last Refreshed": "2024-04-12",
         "4. Time Zone": "US/Eastern"
     },
     "Monthly Adjusted Time Series": {
-        "2024-04-09": {
+        "2024-04-12": {
             "1. open": "71.4900",
             "2. high": "76.2900",
             "3. low": "70.4200",

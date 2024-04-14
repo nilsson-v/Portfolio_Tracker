@@ -2,11 +2,11 @@
     "Meta Data": {
         "1. Information": "Monthly Adjusted Prices and Volumes",
         "2. Symbol": "DXCM",
-        "3. Last Refreshed": "2024-04-05",
+        "3. Last Refreshed": "2024-04-12",
         "4. Time Zone": "US/Eastern"
     },
     "Monthly Adjusted Time Series": {
-        "2024-04-05": {
+        "2024-04-12": {
             "1. open": "138.7900",
             "2. high": "139.9600",
             "3. low": "131.7400",

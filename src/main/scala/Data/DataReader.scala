@@ -14,17 +14,22 @@ import scala.collection.mutable.ArrayBuffer
 import scala.concurrent.Future
 
 
+
 class DataReader:
 
   /** INSERT API Key here*/
   val APIKey = "SZPPN9IYEA485BC9"
 
+  /** Takes a stock ticker as parameter and fetches that stock from the Alpha Vantage API
+   * saves the json file in string fromat in the val jsonString */
   def getAPI(ticker: String) =
     val url = new URL("https://www.alphavantage.co/query?function=TIME_SERIES_MONTHLY_ADJUSTED&symbol=" + ticker + "&apikey=" + APIKey + "&datatype=json")
     val jsonString = Source.fromInputStream(url.openStream()).mkString
     jsonString
 
-
+/** Takes all the ArrayBuffers with the data shown on the dashboard as parameters.
+ * Creates a file path and a file where the data will be stored.
+ * Organises the data so that each ArrayBuffer is separated by a space and the stockEntries1 and 2 marked with headers*/
   def saveData(stockEntries1: ArrayBuffer[(String, Double)], dateEntries1: ArrayBuffer[String], stockEntries2: ArrayBuffer[(String, Double)], dateEntries2: ArrayBuffer[String], filePath: String): Unit = {
     val file = new File(filePath)
     val fileWriter = new FileWriter(file)
@@ -53,6 +58,8 @@ class DataReader:
     }
   }
 
+/**Takes all the ArrayBuffers with the data from the file
+ * Goes through the the file and parses the arrays in order to asign their values to the correct ArrayBuffer*/
   def loadData(filePath: String): (ArrayBuffer[(String, Double)], ArrayBuffer[String], ArrayBuffer[(String, Double)], ArrayBuffer[String]) = {
     val stockEntries1 = ArrayBuffer[(String, Double)]()
     val dateEntries1 = ArrayBuffer[String]()
@@ -72,7 +79,6 @@ class DataReader:
             case "StockEntries2" => currentSection = Some("StockEntries2")
             case ""              => currentSection = None
             
-            /** I have used AI tools for this part to correctly parse it */
             case data if currentSection.contains("StockEntries1") =>
               val parts = data.split(",")
               if (parts.length == 2) {

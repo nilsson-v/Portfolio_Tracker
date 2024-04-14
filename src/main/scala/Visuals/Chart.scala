@@ -6,6 +6,7 @@ import scalafx.scene.chart.{BarChart, CategoryAxis, LineChart, NumberAxis, Scatt
 
 class Chart:
 
+  /** Creates either a bar, line or a scatter chart of one stock */
   def makeChart[T <: XYChart[String, Number]](fileName: String, purchaseDate: String, chartType: String, color: String): XYChart[String, Number]  =
     val priceData = StockData().zipDatesAndPrices(fileName)
     val priceDataM = StockData()pricesFromMonth(priceData, purchaseDate)
@@ -40,6 +41,7 @@ class Chart:
 
     chart
 
+  /** Creates either a combine bar, line or a scatter chart of multiple stocks */
   def makeMultiChart[T <: XYChart[String, Number]](stockList: Array[(String, Double)], purchaseDates: Array[String], chartType: String, color: String): XYChart[String, Number] =
     val priceData = StockData().combineAndMultiply(stockList, purchaseDates)
 
@@ -71,8 +73,8 @@ class Chart:
         scatterChart
     }
     chart
-
-
+  
+  /** Creates a chart with two series of two differen stocks */
   def makeTwoSeriesChart(stockList: Array[String], purchaseDate: String): XYChart[String, Number] = {
     val priceData1 = StockData().zipDatesAndPrices(stockList(0))
     val priceData2 = StockData().zipDatesAndPrices(stockList(1))

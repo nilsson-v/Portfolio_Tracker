@@ -206,7 +206,19 @@ object Main extends JFXApp3:
           val tt = new Tooltip()
           tt.setText(msg)
           tt.setStyle("-fx-background-color: yellow; " +  "-fx-text-fill: black; ")
-          Tooltip.install(sliceNode, tt) })
+          Tooltip.install(sliceNode, tt)
+
+          sliceNode.setOnMouseClicked((me: MouseEvent) => {
+            val label = new Label(s"Stock: ${d.getName}  Holdings: ${d.getPieValue}")
+            label.setStyle("-fx-background-color: white; -fx-padding: 10px;")
+            val popup = new Popup()
+            popup.content.add(label)
+            popup.setAutoHide(true)
+            popup.show(stage)
+            popup.setX(me.screenX - 50)
+            popup.setY(me.screenY - 50)
+            popup.setOnHidden(_ => popup.content.clear()) })
+           })
       }
   }
     /** function that only shows information of datapoints on charts, this is used in "inspect stocks" where no pie is shown */

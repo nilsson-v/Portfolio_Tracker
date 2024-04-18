@@ -1,7 +1,6 @@
 package Visuals
 
 import Data.StockData
-import scalafx.application.Platform
 import scalafx.geometry.Pos
 import scalafx.scene.control.Label
 import scalafx.scene.layout.VBox

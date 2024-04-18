@@ -1,8 +1,5 @@
 package Visuals
 
-import scalafx.collections.ObservableBuffer
-import scalafx.scene.chart.{CategoryAxis, LineChart, NumberAxis, XYChart}
-import scalafx.scene.paint.Color
 
 
 class LineChart extends Chart:

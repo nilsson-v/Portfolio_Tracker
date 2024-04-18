@@ -1,8 +1,6 @@
 package Visuals
 
-import scalafx.collections.ObservableBuffer
-import scalafx.scene.chart.{BarChart, CategoryAxis, NumberAxis, XYChart}
-import scalafx.scene.paint.Color
+
 
 
 class ColumnChart extends Chart:

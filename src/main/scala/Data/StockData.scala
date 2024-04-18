@@ -1,6 +1,6 @@
 package Data
 
-import Data.DataReader
+
 import akka.actor.ActorSystem
 import akka.stream.scaladsl.{Sink, Source as AkkaSource}
 import org.json4s
@@ -10,13 +10,13 @@ import org.json4s.{DefaultFormats, JField, JObject, JString, jvalue2extractable,
 import scalafx.collections.ObservableBuffer
 import upickle.default.*
 
-import scala.collection.mutable.{ArrayBuffer, ListBuffer}
+import scala.collection.mutable.ListBuffer
 import scala.concurrent.Await
 import scala.concurrent.duration.*
 
 
 /** If this program is used with the Alpha Vantage premium API:
- * - Give all "val jsonString" the following value: DataReader().getAPI(fileName)
+ * - Give all "val jsonString" the following value: Data.DataReader().getAPI(fileName)
  * If this program is used with manually downloaded files
  * - Give all "val jsonString" the following value: os.read(os.pwd / "APIFiles" /fileName)*/
 

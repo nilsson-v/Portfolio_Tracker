@@ -1,8 +1,6 @@
 package Visuals
 
 import scalafx.beans.property.StringProperty
-import scalafx.collections.ObservableBuffer
-import scalafx.scene.control.{TableColumn, TableView}
 
 /** custom class table that creates a tableView with the correct labels */
 class Table(var Stock: String, var Price: String, var Amount: String, var Holdings: String):

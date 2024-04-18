@@ -1,18 +1,11 @@
 package Data
 
-import org.json4s.jackson.{Json, parseJson}
-
-import io.StdIn.*
-import sys.process.*
 import java.net.URL
-import java.io.{BufferedInputStream, BufferedReader, BufferedWriter, File, FileOutputStream, FileReader, FileWriter}
+import java.io.{BufferedWriter, File, FileWriter}
 import scala.io.Source
-import scala.util.Using
-import requests.*
+
 
 import scala.collection.mutable.ArrayBuffer
-import scala.concurrent.Future
-
 
 
 class DataReader:
@@ -78,7 +71,7 @@ class DataReader:
             case "StockEntries1" => currentSection = Some("StockEntries1")
             case "StockEntries2" => currentSection = Some("StockEntries2")
             case ""              => currentSection = None
-            
+
             case data if currentSection.contains("StockEntries1") =>
               val parts = data.split(",")
               if (parts.length == 2) {

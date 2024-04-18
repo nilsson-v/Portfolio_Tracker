@@ -13,16 +13,14 @@ import scalafx.scene.control.{Alert, Label, Menu, MenuBar, MenuItem, ScrollPane,
 import scalafx.application.JFXApp3
 import scalafx.event.ActionEvent
 import scalafx.scene.layout.{BorderPane, HBox}
-import scalafx.stage.{FileChooser, Modality, Popup, Stage}
+import scalafx.stage.{FileChooser, Popup}
 import scalafx.stage.FileChooser.*
 import scalafx.Includes.*
 import scalafx.geometry.Orientation
 import scalafx.scene.chart.{Chart, PieChart, XYChart}
 import scalafx.scene.control.Alert.AlertType
 import scalafx.scene.input.MouseEvent
-import scalafx.scene.paint.Color
 
-import java.io.File
 import scala.collection.mutable.ArrayBuffer
 
 /** If using premium API, remove the error handling code on line 394-402 */

@@ -1,7 +1,5 @@
 package Visuals
-import scalafx.collections.ObservableBuffer
-import scalafx.scene.chart.{CategoryAxis, NumberAxis, ScatterChart, XYChart}
-import scalafx.scene.paint.Color
+
 
 class ScatterChart extends Chart: 
 

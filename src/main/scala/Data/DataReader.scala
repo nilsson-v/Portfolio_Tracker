@@ -79,7 +79,7 @@ class DataReader:
               } else if (parts.length == 1) {
                 dateEntries1 += parts(0)
               } else {
-                println(s"Invalid data format in section StockEntries1: $data")
+                println(s"Invalid data: $data")
               }
             case data if currentSection.contains("StockEntries2") =>
               val parts = data.split(",")
@@ -88,9 +88,9 @@ class DataReader:
               } else if (parts.length == 1) {
                 dateEntries2 += parts(0)
               } else {
-                println(s"Invalid data format in section StockEntries2: $data")
+                println(s"Invalid data: $data")
               }
-            case _ => println(s"Ignoring invalid line: $trimmedLine")
+            case _ => println(s"Invalid line: $trimmedLine")
           }
         }
       }
